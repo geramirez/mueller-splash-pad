@@ -11,6 +11,7 @@ import Element exposing (fill)
 import Element exposing (width)
 import Element exposing (padding)
 import Element exposing (Color)
+import Element exposing (alignBottom)
 
 main : Program Flags Model Msg
 main =
@@ -30,7 +31,7 @@ type alias Flags =
 
 initialModel : SpashPadStatus
 initialModel =
-  On
+  Off
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
@@ -49,11 +50,17 @@ view model =
         [ layout
             [ Background.color (getColorPalette model).primary, Font.color (getColorPalette model).secondary, padding 30 ]
             (column [height fill, width fill] [
-              row [] [el [Font.size 50] (text "Mueller Splashpad")]
+              row [] [el [Font.size 40] (text "Mueller Splashpad: Last updated at: May 1, 2021 - 3:57PM")]
               ,row [centerY, centerX] [statusElement model]
+              ,row [alignBottom] [el [Font.size 50] (text (helpText model))]
+
             ])
         ]
     }
+
+helpText : SpashPadStatus -> String
+helpText model = 
+  "Is this wrong? Text '" ++ (if model == On then "Not Working" else "Working") ++  "' to 737-235-7904"
 
 statusElement : SpashPadStatus -> Element.Element msg
 statusElement model = 
