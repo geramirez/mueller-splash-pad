@@ -7,7 +7,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Http
-import Json.Decode exposing (Decoder, field, string)
+import Json.Decode exposing (field, int, map2, map3, string)
 
 
 main : Program Flags Model Msg
@@ -21,8 +21,8 @@ main =
 
 
 type SpashPadStatus
-    = On
-    | Off
+    = On StatusResponse
+    | Off StatusResponse
     | Unknown
 
 
@@ -41,26 +41,60 @@ initialModel =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( initialModel, Cmd.none )
+    ( initialModel, getSplashpadStatus )
 
 
 type Msg
-    = SetOn
-    | SetOff
-    | SetUknown
+    = Loading
+    | SendVote String
+    | GotStatus (Result Http.Error StatusResponse)
+
+
+getStatus : StatusResponse -> SpashPadStatus
+getStatus statusResponse =
+    case statusResponse.status of
+        "working" ->
+            On statusResponse
+
+        "not working" ->
+            Off statusResponse
+
+        _ ->
+            Unknown
+
+
+updatedAt : Model -> String
+updatedAt model =
+    case model of
+        On statusResponse ->
+            statusResponse.updated_at
+
+        Off statusResponse ->
+            statusResponse.updated_at
+
+        Unknown ->
+            "N/A"
+
+getInfoText model= 
+    " Last updated at: " ++ (updatedAt model)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg _ =
     case msg of
-        SetOn ->
-            ( On, Cmd.none )
+        GotStatus result ->
+            case result of
+                Ok statusResponse ->
+                    ( getStatus statusResponse, Cmd.none )
 
-        SetOff ->
-            ( Off, Cmd.none )
-
-        SetUknown ->
+                Err _ ->
+                    ( Unknown, Cmd.none )
+        Loading ->
             ( Unknown, Cmd.none )
+        
+        SendVote vote -> 
+            (Unknown, postVotes vote)
+
 
 
 view : Model -> Browser.Document Msg
@@ -72,7 +106,7 @@ view model =
             (column [ height fill, width fill ]
                 [ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ]
                 , row [ centerY, centerX ] [ statusElement model ]
-                , row [ centerY, centerX ] [ el [ Font.size 20 ] (text " Last updated at: May 1, 2021 - 3:57PM") ]
+                , row [ centerY, centerX ] [ el [ Font.size 20 ] (text (getInfoText model)) ]
                 , row [ centerX ]
                     [ column []
                         [ row [ spacing 20 ] (updateButtons model)
@@ -84,25 +118,13 @@ view model =
     }
 
 
-helpText : SpashPadStatus -> String
-helpText model =
-    "Is this wrong? Text '"
-        ++ (if model == On then
-                "Not Working"
-
-            else
-                "Working"
-           )
-        ++ "' to 737-235-7904"
-
-
 updateButtons : SpashPadStatus -> List (Element.Element Msg)
 updateButtons model =
     case model of
-        On ->
+        On _ ->
             [ isNotWorkingButton (getColorPalette model) ]
 
-        Off ->
+        Off _ ->
             [ isWorkingButton (getColorPalette model) ]
 
         Unknown ->
@@ -122,7 +144,7 @@ isWorkingButton colorPalette =
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
         ]
-        { onPress = Just SetOn
+        { onPress = Just (SendVote "on")
         , label = text "It's Working"
         }
 
@@ -140,7 +162,7 @@ isNotWorkingButton colorPalette =
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
         ]
-        { onPress = Just SetOff
+        { onPress = Just (SendVote "off")
         , label = text "It's Not Working"
         }
 
@@ -153,10 +175,10 @@ statusElement model =
 displayText : SpashPadStatus -> String
 displayText model =
     case model of
-        Off ->
+        Off _ ->
             "Not Working"
 
-        On ->
+        On _ ->
             "Working!"
 
         Unknown ->
@@ -173,10 +195,10 @@ type alias ColorPalette =
 getColorPalette : SpashPadStatus -> ColorPalette
 getColorPalette model =
     case model of
-        Off ->
+        Off _ ->
             { primary = rgb255 175 36 30, secondary = rgb255 233 210 153, tertiary = rgb255 43 45 66 }
 
-        On ->
+        On _ ->
             { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
 
         Unknown ->
@@ -190,12 +212,38 @@ subscriptions _ =
 
 getSplashpadStatus : Cmd Msg
 getSplashpadStatus =
-  Http.get
-    { url = "//localhost:3000"
-    , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
+    Http.get
+        { url = "http://localhost:3000/status"
+        , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
+        }
+
+postVotes : String -> Cmd Msg
+postVotes vote =
+  Http.post
+    { url = "http://localhost:3000/status"
+    , body = Http.stringBody "application/json" vote
+    , expect =  Http.expectJson GotStatus splashPadGetResponseDecoder
+    }
+
+type alias VoteResponse =
+    { working : Int, not_working : Int }
+
+
+type alias StatusResponse =
+    { status : String
+    , votes : VoteResponse
+    , updated_at : String
     }
 
 
-splashPadGetResponseDecoder : Decoder String
 splashPadGetResponseDecoder =
-  field "data" (field "image_url" string)
+    map3 StatusResponse
+        (field "status" string)
+        (field "votes" voteResponseDecoder)
+        (field "updated_at" string)
+
+
+voteResponseDecoder =
+    map2 VoteResponse
+        (field "working" int)
+        (field "not_working" int)
