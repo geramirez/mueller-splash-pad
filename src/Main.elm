@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Array exposing (get)
 import Browser
 import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, padding, rgb255, row, spacing, text, width)
 import Element.Background as Background
@@ -34,7 +35,7 @@ type alias Flags =
 
 initialModel : SpashPadStatus
 initialModel =
-    On
+    Unknown
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -43,12 +44,22 @@ init _ =
 
 
 type Msg
-    = None
+    = SetOn
+    | SetOff
+    | SetUknown
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
+update msg _ =
+    case msg of
+        SetOn ->
+            ( On, Cmd.none )
+
+        SetOff ->
+            ( Off, Cmd.none )
+
+        SetUknown ->
+            ( Unknown, Cmd.none )
 
 
 view : Model -> Browser.Document Msg
@@ -84,31 +95,51 @@ helpText model =
         ++ "' to 737-235-7904"
 
 
-updateButtons : SpashPadStatus -> List (Element.Element msg)
+updateButtons : SpashPadStatus -> List (Element.Element Msg)
 updateButtons model =
     case model of
         On ->
-            [ isNotWorkingButton ]
+            [ isNotWorkingButton (getColorPalette model) ]
 
         Off ->
-            [ isWorkingButton ]
+            [ isWorkingButton (getColorPalette model) ]
 
         Unknown ->
-            [ isWorkingButton, isNotWorkingButton ]
+            [ isWorkingButton (getColorPalette model), isNotWorkingButton (getColorPalette model) ]
 
 
-isWorkingButton =
+isWorkingButton : ColorPalette -> Element.Element Msg
+isWorkingButton colorPalette =
     button
-        [ padding 30, Font.size 25 ]
-        { onPress = Nothing
+        [ padding 30
+        , Font.size 25
+        , Background.color colorPalette.primary
+        , Border.color colorPalette.tertiary
+        , Border.solid
+        , Border.width 1
+        , Border.rounded 10
+        , Element.focused
+            [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
+        ]
+        { onPress = Just SetOn
         , label = text "It's Working"
         }
 
 
-isNotWorkingButton =
+isNotWorkingButton : ColorPalette -> Element.Element Msg
+isNotWorkingButton colorPalette =
     button
-        [ padding 30, Font.size 25 ]
-        { onPress = Nothing
+        [ padding 30
+        , Font.size 25
+        , Background.color colorPalette.primary
+        , Border.color colorPalette.tertiary
+        , Border.solid
+        , Border.width 1
+        , Border.rounded 10
+        , Element.focused
+            [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
+        ]
+        { onPress = Just SetOff
         , label = text "It's Not Working"
         }
 
@@ -134,6 +165,7 @@ displayText model =
 type alias ColorPalette =
     { primary : Color
     , secondary : Color
+    , tertiary : Color
     }
 
 
@@ -141,13 +173,13 @@ getColorPalette : SpashPadStatus -> ColorPalette
 getColorPalette model =
     case model of
         Off ->
-            { primary = rgb255 175 36 30, secondary = rgb255 233 210 153 }
+            { primary = rgb255 175 36 30, secondary = rgb255 233 210 153, tertiary = rgb255 43 45 66 }
 
         On ->
-            { primary = rgb255 191 255 251, secondary = rgb255 0 111 104 }
+            { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
 
         Unknown ->
-            { primary = rgb255 173 173 173, secondary = rgb255 247 247 247 }
+            { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
 
 
 subscriptions : Model -> Sub Msg
