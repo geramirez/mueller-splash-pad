@@ -1,8 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (Color, alignBottom, centerX, centerY, column, el, fill, height, layout, padding, rgb255, row, text, width)
+import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, padding, rgb255, row, spacing, text, width)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 
@@ -33,7 +34,7 @@ type alias Flags =
 
 initialModel : SpashPadStatus
 initialModel =
-    Unknown
+    On
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -52,14 +53,19 @@ update _ model =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Mueller Splashpad"
+    { title = "Mueller Splashpad Status"
     , body =
         [ layout
             [ Background.color (getColorPalette model).primary, Font.color (getColorPalette model).secondary, padding 30 ]
             (column [ height fill, width fill ]
-                [ row [] [ el [ Font.size 40 ] (text "Mueller Splashpad: Last updated at: May 1, 2021 - 3:57PM") ]
+                [ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ]
                 , row [ centerY, centerX ] [ statusElement model ]
-                , row [ alignBottom ] [ el [ Font.size 50 ] (text (helpText model)) ]
+                , row [ centerY, centerX ] [ el [ Font.size 20 ] (text " Last updated at: May 1, 2021 - 3:57PM") ]
+                , row [ centerX ]
+                    [ column []
+                        [ row [ spacing 20 ] (updateButtons model)
+                        ]
+                    ]
                 ]
             )
         ]
@@ -78,20 +84,31 @@ helpText model =
         ++ "' to 737-235-7904"
 
 
-isWorkingButton : Element.Element (Cmd msg)
+updateButtons : SpashPadStatus -> List (Element.Element msg)
+updateButtons model =
+    case model of
+        On ->
+            [ isNotWorkingButton ]
+
+        Off ->
+            [ isWorkingButton ]
+
+        Unknown ->
+            [ isWorkingButton, isNotWorkingButton ]
+
+
 isWorkingButton =
     button
-        []
-        { onPress = Just Cmd.none
+        [ padding 30, Font.size 25 ]
+        { onPress = Nothing
         , label = text "It's Working"
         }
 
 
-isNotWorkingButton : Element.Element (Cmd msg)
 isNotWorkingButton =
     button
-        []
-        { onPress = Just Cmd.none
+        [ padding 30, Font.size 25 ]
+        { onPress = Nothing
         , label = text "It's Not Working"
         }
 
