@@ -1,6 +1,5 @@
 module Main exposing (..)
 
-import Array exposing (get)
 import Browser
 import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, padding, rgb255, row, spacing, text, width)
 import Element.Background as Background
