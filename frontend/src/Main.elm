@@ -6,6 +6,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
+import Http
+import Json.Decode exposing (Decoder, field, string)
 
 
 main : Program Flags Model Msg
@@ -184,3 +186,16 @@ getColorPalette model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
+
+getSplashpadStatus : Cmd Msg
+getSplashpadStatus =
+  Http.get
+    { url = "//localhost:3000"
+    , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
+    }
+
+
+splashPadGetResponseDecoder : Decoder String
+splashPadGetResponseDecoder =
+  field "data" (field "image_url" string)
