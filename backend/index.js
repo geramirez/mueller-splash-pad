@@ -4,7 +4,7 @@ const loki = require('lokijs')
 
 const app = express()
 app.use(express.json());
-const port = 3000
+const PORT = process.env.PORT || 3000
 
 app.use(express.static('public'));
 

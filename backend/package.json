@@ -13,6 +13,8 @@
     "express": "^4.17.1",
     "lokijs": "^1.5.12"
   },
-  "devDependencies": {
+  "devDependencies": {},
+  "engines": {
+    "node": "14.x"
   }
 }
