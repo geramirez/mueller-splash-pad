@@ -1,13 +1,14 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, padding, rgb255, row, spacing, text, width)
+import Debug exposing (toString)
+import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, link, padding, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Http
-import Json.Decode exposing (field, int, map2, map4, string, bool)
+import Json.Decode exposing (bool, field, int, map2, map4, string)
 import Json.Encode as Encode
 
 
@@ -20,8 +21,11 @@ main =
         , subscriptions = subscriptions
         }
 
-type HasVoted = Voted 
+
+type HasVoted
+    = Voted
     | NotVoted
+
 
 type SpashPadStatus
     = On StatusResponse HasVoted
@@ -53,8 +57,13 @@ type Msg
     | GotStatus (Result Http.Error StatusResponse)
 
 
-getIfVoted statusResponse = 
-    if statusResponse.voted then Voted else NotVoted
+getIfVoted statusResponse =
+    if statusResponse.voted then
+        Voted
+
+    else
+        NotVoted
+
 
 getStatus : StatusResponse -> SpashPadStatus
 getStatus statusResponse =
@@ -69,21 +78,17 @@ getStatus statusResponse =
             Unknown
 
 
-updatedAt : Model -> String
-updatedAt model =
+updatedText : Model -> String
+updatedText model =
     case model of
         On statusResponse _ ->
-            statusResponse.updated_at
+            " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
         Off statusResponse _ ->
-            statusResponse.updated_at
+            " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
         Unknown ->
-            "N/A"
-
-
-getInfoText model =
-    " Last updated at: " ++ updatedAt model
+            ""
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -110,14 +115,20 @@ view model =
     , body =
         [ layout
             [ Background.color (getColorPalette model).primary, Font.color (getColorPalette model).secondary, padding 30 ]
-            (column [ height fill, width fill ]
+            (column [ height fill, width fill, spacing 20 ]
                 [ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ]
                 , row [ centerY, centerX ] [ statusElement model ]
-                , row [ centerY, centerX ] [ el [ Font.size 20 ] (text (getInfoText model)) ]
+                , row [ centerY, centerX ] [ el [ Font.size 30 ] (text (updatedText model)) ]
                 , row [ centerX ]
                     [ column []
                         [ row [ spacing 20 ] (updateButtons model)
                         ]
+                    ]
+                , row [ centerX ]
+                    [ link [Font.size 10, Font.color (rgb255 0 0 0), Font.underline, Font.extraBold ]
+                        { url = "https://github.com/geramirez/mueller-splash-pad"
+                        , label = text "Visit Github Source Code to report issues"
+                        }
                     ]
                 ]
             )
@@ -129,12 +140,13 @@ updateButtons : SpashPadStatus -> List (Element.Element Msg)
 updateButtons model =
     case model of
         On _ Voted ->
-            [ ]
-        Off _ Voted ->
-            [ ]
-        _  ->
-          [ isWorkingButton (getColorPalette model), isNotWorkingButton (getColorPalette model) ]
+            []
 
+        Off _ Voted ->
+            []
+
+        _ ->
+            [ isWorkingButton (getColorPalette model), isNotWorkingButton (getColorPalette model) ]
 
 
 isWorkingButton : ColorPalette -> Element.Element Msg
@@ -182,7 +194,7 @@ displayText : SpashPadStatus -> String
 displayText model =
     case model of
         Off _ _ ->
-            "Not Working"
+            "Not \n Working"
 
         On _ _ ->
             "Working!"
@@ -246,7 +258,7 @@ type alias StatusResponse =
     { status : String
     , votes : VoteResponse
     , updated_at : String
-    , voted: Bool
+    , voted : Bool
     }
 
 
@@ -256,7 +268,6 @@ splashPadGetResponseDecoder =
         (field "votes" voteResponseDecoder)
         (field "updated_at" string)
         (field "voted" bool)
-
 
 
 voteResponseDecoder =

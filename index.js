@@ -35,19 +35,18 @@ class StatusRepository {
     if(voteDates.length > 0)
       return voteDates.reduce(function (a, b) { return a > b ? a : b; })
     return 'N/A'
-      
   }
 
   getStatus() {
     const workingVotes = this.votes.count({ status: true, timestamp: { $gte: oneHourAgo() } })
     const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: oneHourAgo() } })
     this.votes.findAndRemove({timestamp :{ $lt: oneHourAgo() }})
-    if (workingVotes === 0 && notWorkingVotes === 0) {
-      return "unknown"
+    if (workingVotes === notWorkingVotes) {
+      return {status: "unknown", workingVotes, notWorkingVotes}
     } else if (workingVotes > notWorkingVotes) {
-      return "working"
+      return {status: "working", workingVotes, notWorkingVotes}
     } else {
-      return "not working"
+      return {status: "not working", workingVotes, notWorkingVotes}
     }
   }
 }
@@ -56,7 +55,9 @@ class StatusRepository {
 const statusRepository = new StatusRepository()
 
 app.get('/status', (req, res) => {
-  res.json({ status: statusRepository.getStatus(), votes: { working: 1, not_working: 0 }, updated_at: statusRepository.getLastVoteTime(), voted: false })
+  const {status, workingVotes, notWorkingVotes} = statusRepository.getStatus()
+  console.log(status, workingVotes, notWorkingVotes)
+  res.json({ status , votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(), voted: false })
 })
 
 
@@ -65,7 +66,8 @@ app.post('/status', (req, res) => {
     statusRepository.addOnVote()
   else if (req.body.vote === 'off')
     statusRepository.addOffVote()
-  res.json({ status: statusRepository.getStatus(), votes: { working: 1, not_working: 0 }, updated_at: statusRepository.getLastVoteTime(), voted: true })
+  const {status, workingVotes, notWorkingVotes} = statusRepository.getStatus()
+  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(), voted: true })
 })
 
 
