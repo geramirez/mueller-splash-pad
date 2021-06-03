@@ -8,6 +8,7 @@ import Element.Font as Font
 import Element.Input exposing (button)
 import Http
 import Json.Decode exposing (field, int, map2, map3, string)
+import Json.Encode as Encode
 
 
 main : Program Flags Model Msg
@@ -144,7 +145,7 @@ isWorkingButton colorPalette =
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
         ]
-        { onPress = Just (SendVote "on")
+        { onPress = Just( SendVote "on")
         , label = text "It's Working"
         }
 
@@ -221,7 +222,9 @@ postVotes : String -> Cmd Msg
 postVotes vote =
   Http.post
     { url = "http://localhost:3000/status"
-    , body = Http.stringBody "application/json" vote
+    , body = Http.jsonBody (Encode.object
+        [ ( "vote", Encode.string vote )
+        ])
     , expect =  Http.expectJson GotStatus splashPadGetResponseDecoder
     }
 
