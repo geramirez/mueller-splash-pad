@@ -56,7 +56,6 @@ const statusRepository = new StatusRepository()
 
 app.get('/status', (req, res) => {
   const {status, workingVotes, notWorkingVotes} = statusRepository.getStatus()
-  console.log(status, workingVotes, notWorkingVotes)
   res.json({ status , votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(), voted: false })
 })
 
