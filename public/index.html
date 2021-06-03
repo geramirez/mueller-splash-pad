@@ -8,11 +8,21 @@
 </head>
 
 <body>
-	<div id="app"></div>
+  <div id="app"><h1>Getting Location...</h1></div>
+  
 	<script>
-	var app = Elm.Main.init({
-	  node: document.getElementById('app'),
-	});
+  navigator.geolocation.getCurrentPosition(position => {
+    Elm.Main.init({
+      node: document.getElementById('app'),
+      flags: position
+    })
+  }, (error) => {
+    Elm.Main.init({
+      node: document.getElementById('app'),
+      flags: null
+    })
+  });
+	
 	</script>
   </body>
 

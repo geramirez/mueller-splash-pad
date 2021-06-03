@@ -28,27 +28,26 @@ type HasVoted
 
 
 type SpashPadStatus
-    = On StatusResponse HasVoted
-    | Off StatusResponse HasVoted
-    | Unknown
+    = On Flags StatusResponse HasVoted
+    | Off Flags StatusResponse HasVoted
+    | Unknown Flags HasVoted
 
 
 type alias Model =
     SpashPadStatus
 
 
+type alias Geolocation =
+    Maybe { coords : { latitude : Float, longitude : Float }, timestamp : Int }
+
+
 type alias Flags =
-    {}
-
-
-initialModel : SpashPadStatus
-initialModel =
-    Unknown
+    Geolocation
 
 
 init : Flags -> ( Model, Cmd Msg )
-init _ =
-    ( initialModel, getSplashpadStatus )
+init geolocation =
+    ( Unknown geolocation NotVoted, getSplashpadStatus )
 
 
 type Msg
@@ -65,48 +64,60 @@ getIfVoted statusResponse =
         NotVoted
 
 
-getStatus : StatusResponse -> SpashPadStatus
-getStatus statusResponse =
+getStatus statusResponse geolocation =
     case statusResponse.status of
         "working" ->
-            On statusResponse (getIfVoted statusResponse)
+            On geolocation statusResponse (getIfVoted statusResponse)
 
         "not working" ->
-            Off statusResponse (getIfVoted statusResponse)
+            Off geolocation statusResponse (getIfVoted statusResponse)
 
         _ ->
-            Unknown
+            Unknown geolocation (getIfVoted statusResponse)
 
 
 updatedText : Model -> String
 updatedText model =
     case model of
-        On statusResponse _ ->
+        On _ statusResponse _ ->
             " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
-        Off statusResponse _ ->
+        Off _ statusResponse _ ->
             " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
-        Unknown ->
+        Unknown _ _ ->
             ""
 
 
+getGeolocation : SpashPadStatus -> Flags
+getGeolocation model =
+    case model of
+        Unknown geolocation _ ->
+            geolocation
+
+        On geolocation _ _ ->
+            geolocation
+
+        Off geolocation _ _ ->
+            geolocation
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg _ =
+update msg model =
     case msg of
         GotStatus result ->
             case result of
                 Ok statusResponse ->
-                    ( getStatus statusResponse, Cmd.none )
+                    ( getStatus statusResponse (getGeolocation model), Cmd.none )
 
                 Err _ ->
-                    ( Unknown, Cmd.none )
+                    ( Unknown (getGeolocation model) Voted, Cmd.none )
 
         Loading ->
-            ( Unknown, Cmd.none )
+            ( Unknown (getGeolocation model) Voted, Cmd.none )
 
         SendVote vote ->
-            ( Unknown, postVotes vote )
+            ( Unknown (getGeolocation model) Voted, postVotes vote )
 
 
 view : Model -> Browser.Document Msg
@@ -125,7 +136,7 @@ view model =
                         ]
                     ]
                 , row [ centerX ]
-                    [ link [Font.size 10, Font.color (rgb255 0 0 0), Font.underline, Font.extraBold ]
+                    [ link [ Font.size 10, Font.color (rgb255 0 0 0), Font.underline, Font.extraBold ]
                         { url = "https://github.com/geramirez/mueller-splash-pad"
                         , label = text "Visit Github Source Code to report issues"
                         }
@@ -139,10 +150,22 @@ view model =
 updateButtons : SpashPadStatus -> List (Element.Element Msg)
 updateButtons model =
     case model of
-        On _ Voted ->
+        On Nothing _ NotVoted ->
             []
 
-        Off _ Voted ->
+        Off Nothing _ NotVoted ->
+            []
+
+        On _ _ Voted ->
+            []
+
+        Off _ _ Voted ->
+            []
+
+        Unknown _ Voted ->
+            []
+
+        Unknown Nothing _ ->
             []
 
         _ ->
@@ -193,13 +216,13 @@ statusElement model =
 displayText : SpashPadStatus -> String
 displayText model =
     case model of
-        Off _ _ ->
+        Off _ _ _ ->
             "Not \n Working"
 
-        On _ _ ->
+        On _ _ _ ->
             "Working!"
 
-        Unknown ->
+        Unknown _ _ ->
             "Unknown"
 
 
@@ -213,13 +236,13 @@ type alias ColorPalette =
 getColorPalette : SpashPadStatus -> ColorPalette
 getColorPalette model =
     case model of
-        Off _ _ ->
+        Off _ _ _ ->
             { primary = rgb255 175 36 30, secondary = rgb255 233 210 153, tertiary = rgb255 43 45 66 }
 
-        On _ _ ->
+        On _ _ _ ->
             { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
 
-        Unknown ->
+        Unknown _ _ ->
             { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
 
 
