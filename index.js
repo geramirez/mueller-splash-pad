@@ -56,7 +56,7 @@ class StatusRepository {
 const statusRepository = new StatusRepository()
 
 app.get('/status', (req, res) => {
-  res.json({ status: statusRepository.getStatus(), votes: { working: 1, not_working: 0 }, updated_at: statusRepository.getLastVoteTime() })
+  res.json({ status: statusRepository.getStatus(), votes: { working: 1, not_working: 0 }, updated_at: statusRepository.getLastVoteTime(), voted: false })
 })
 
 
@@ -65,7 +65,7 @@ app.post('/status', (req, res) => {
     statusRepository.addOnVote()
   else if (req.body.vote === 'off')
     statusRepository.addOffVote()
-  res.json({ status: statusRepository.getStatus(), votes: { working: 1, not_working: 0 }, updated_at: statusRepository.getLastVoteTime() })
+  res.json({ status: statusRepository.getStatus(), votes: { working: 1, not_working: 0 }, updated_at: statusRepository.getLastVoteTime(), voted: true })
 })
 
 

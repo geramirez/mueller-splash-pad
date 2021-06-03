@@ -6160,12 +6160,13 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Main$StatusResponse = F3(
-	function (status, votes, updated_at) {
-		return {status: status, updated_at: updated_at, votes: votes};
+var $author$project$Main$StatusResponse = F4(
+	function (status, votes, updated_at, voted) {
+		return {status: status, updated_at: updated_at, voted: voted, votes: votes};
 	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$map4 = _Json_map4;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$VoteResponse = F2(
 	function (working, not_working) {
@@ -6177,12 +6178,13 @@ var $author$project$Main$voteResponseDecoder = A3(
 	$author$project$Main$VoteResponse,
 	A2($elm$json$Json$Decode$field, 'working', $elm$json$Json$Decode$int),
 	A2($elm$json$Json$Decode$field, 'not_working', $elm$json$Json$Decode$int));
-var $author$project$Main$splashPadGetResponseDecoder = A4(
-	$elm$json$Json$Decode$map3,
+var $author$project$Main$splashPadGetResponseDecoder = A5(
+	$elm$json$Json$Decode$map4,
 	$author$project$Main$StatusResponse,
 	A2($elm$json$Json$Decode$field, 'status', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'votes', $author$project$Main$voteResponseDecoder),
-	A2($elm$json$Json$Decode$field, 'updated_at', $elm$json$Json$Decode$string));
+	A2($elm$json$Json$Decode$field, 'updated_at', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'voted', $elm$json$Json$Decode$bool));
 var $author$project$Main$getSplashpadStatus = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotStatus, $author$project$Main$splashPadGetResponseDecoder),
@@ -6198,19 +6200,32 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$Off = function (a) {
-	return {$: 'Off', a: a};
-};
-var $author$project$Main$On = function (a) {
-	return {$: 'On', a: a};
+var $author$project$Main$Off = F2(
+	function (a, b) {
+		return {$: 'Off', a: a, b: b};
+	});
+var $author$project$Main$On = F2(
+	function (a, b) {
+		return {$: 'On', a: a, b: b};
+	});
+var $author$project$Main$NotVoted = {$: 'NotVoted'};
+var $author$project$Main$Voted = {$: 'Voted'};
+var $author$project$Main$getIfVoted = function (statusResponse) {
+	return statusResponse.voted ? $author$project$Main$Voted : $author$project$Main$NotVoted;
 };
 var $author$project$Main$getStatus = function (statusResponse) {
 	var _v0 = statusResponse.status;
 	switch (_v0) {
 		case 'working':
-			return $author$project$Main$On(statusResponse);
+			return A2(
+				$author$project$Main$On,
+				statusResponse,
+				$author$project$Main$getIfVoted(statusResponse));
 		case 'not working':
-			return $author$project$Main$Off(statusResponse);
+			return A2(
+				$author$project$Main$Off,
+				statusResponse,
+				$author$project$Main$getIfVoted(statusResponse));
 		default:
 			return $author$project$Main$Unknown;
 	}
@@ -12596,28 +12611,34 @@ var $author$project$Main$isWorkingButton = function (colorPalette) {
 		});
 };
 var $author$project$Main$updateButtons = function (model) {
-	switch (model.$) {
-		case 'On':
-			return _List_fromArray(
-				[
-					$author$project$Main$isNotWorkingButton(
-					$author$project$Main$getColorPalette(model))
-				]);
-		case 'Off':
-			return _List_fromArray(
-				[
-					$author$project$Main$isWorkingButton(
-					$author$project$Main$getColorPalette(model))
-				]);
-		default:
-			return _List_fromArray(
-				[
-					$author$project$Main$isWorkingButton(
-					$author$project$Main$getColorPalette(model)),
-					$author$project$Main$isNotWorkingButton(
-					$author$project$Main$getColorPalette(model))
-				]);
+	_v0$2:
+	while (true) {
+		switch (model.$) {
+			case 'On':
+				if (model.b.$ === 'Voted') {
+					var _v1 = model.b;
+					return _List_Nil;
+				} else {
+					break _v0$2;
+				}
+			case 'Off':
+				if (model.b.$ === 'Voted') {
+					var _v2 = model.b;
+					return _List_Nil;
+				} else {
+					break _v0$2;
+				}
+			default:
+				break _v0$2;
+		}
 	}
+	return _List_fromArray(
+		[
+			$author$project$Main$isWorkingButton(
+			$author$project$Main$getColorPalette(model)),
+			$author$project$Main$isNotWorkingButton(
+			$author$project$Main$getColorPalette(model))
+		]);
 };
 var $author$project$Main$view = function (model) {
 	return {

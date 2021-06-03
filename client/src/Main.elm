@@ -7,7 +7,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Http
-import Json.Decode exposing (field, int, map2, map3, string)
+import Json.Decode exposing (field, int, map2, map4, string, bool)
 import Json.Encode as Encode
 
 
@@ -20,10 +20,12 @@ main =
         , subscriptions = subscriptions
         }
 
+type HasVoted = Voted 
+    | NotVoted
 
 type SpashPadStatus
-    = On StatusResponse
-    | Off StatusResponse
+    = On StatusResponse HasVoted
+    | Off StatusResponse HasVoted
     | Unknown
 
 
@@ -51,14 +53,17 @@ type Msg
     | GotStatus (Result Http.Error StatusResponse)
 
 
+getIfVoted statusResponse = 
+    if statusResponse.voted then Voted else NotVoted
+
 getStatus : StatusResponse -> SpashPadStatus
 getStatus statusResponse =
     case statusResponse.status of
         "working" ->
-            On statusResponse
+            On statusResponse (getIfVoted statusResponse)
 
         "not working" ->
-            Off statusResponse
+            Off statusResponse (getIfVoted statusResponse)
 
         _ ->
             Unknown
@@ -67,17 +72,18 @@ getStatus statusResponse =
 updatedAt : Model -> String
 updatedAt model =
     case model of
-        On statusResponse ->
+        On statusResponse _ ->
             statusResponse.updated_at
 
-        Off statusResponse ->
+        Off statusResponse _ ->
             statusResponse.updated_at
 
         Unknown ->
             "N/A"
 
-getInfoText model= 
-    " Last updated at: " ++ (updatedAt model)
+
+getInfoText model =
+    " Last updated at: " ++ updatedAt model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,12 +96,12 @@ update msg _ =
 
                 Err _ ->
                     ( Unknown, Cmd.none )
+
         Loading ->
             ( Unknown, Cmd.none )
-        
-        SendVote vote -> 
-            (Unknown, postVotes vote)
 
+        SendVote vote ->
+            ( Unknown, postVotes vote )
 
 
 view : Model -> Browser.Document Msg
@@ -122,14 +128,13 @@ view model =
 updateButtons : SpashPadStatus -> List (Element.Element Msg)
 updateButtons model =
     case model of
-        On _ ->
-            [ isNotWorkingButton (getColorPalette model) ]
+        On _ Voted ->
+            [ ]
+        Off _ Voted ->
+            [ ]
+        _  ->
+          [ isWorkingButton (getColorPalette model), isNotWorkingButton (getColorPalette model) ]
 
-        Off _ ->
-            [ isWorkingButton (getColorPalette model) ]
-
-        Unknown ->
-            [ isWorkingButton (getColorPalette model), isNotWorkingButton (getColorPalette model) ]
 
 
 isWorkingButton : ColorPalette -> Element.Element Msg
@@ -145,7 +150,7 @@ isWorkingButton colorPalette =
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
         ]
-        { onPress = Just( SendVote "on")
+        { onPress = Just (SendVote "on")
         , label = text "It's Working"
         }
 
@@ -176,10 +181,10 @@ statusElement model =
 displayText : SpashPadStatus -> String
 displayText model =
     case model of
-        Off _ ->
+        Off _ _ ->
             "Not Working"
 
-        On _ ->
+        On _ _ ->
             "Working!"
 
         Unknown ->
@@ -196,10 +201,10 @@ type alias ColorPalette =
 getColorPalette : SpashPadStatus -> ColorPalette
 getColorPalette model =
     case model of
-        Off _ ->
+        Off _ _ ->
             { primary = rgb255 175 36 30, secondary = rgb255 233 210 153, tertiary = rgb255 43 45 66 }
 
-        On _ ->
+        On _ _ ->
             { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
 
         Unknown ->
@@ -218,15 +223,20 @@ getSplashpadStatus =
         , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
         }
 
+
 postVotes : String -> Cmd Msg
 postVotes vote =
-  Http.post
-    { url = "http://localhost:3000/status"
-    , body = Http.jsonBody (Encode.object
-        [ ( "vote", Encode.string vote )
-        ])
-    , expect =  Http.expectJson GotStatus splashPadGetResponseDecoder
-    }
+    Http.post
+        { url = "http://localhost:3000/status"
+        , body =
+            Http.jsonBody
+                (Encode.object
+                    [ ( "vote", Encode.string vote )
+                    ]
+                )
+        , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
+        }
+
 
 type alias VoteResponse =
     { working : Int, not_working : Int }
@@ -236,14 +246,17 @@ type alias StatusResponse =
     { status : String
     , votes : VoteResponse
     , updated_at : String
+    , voted: Bool
     }
 
 
 splashPadGetResponseDecoder =
-    map3 StatusResponse
+    map4 StatusResponse
         (field "status" string)
         (field "votes" voteResponseDecoder)
         (field "updated_at" string)
+        (field "voted" bool)
+
 
 
 voteResponseDecoder =
