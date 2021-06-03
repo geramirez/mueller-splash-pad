@@ -231,7 +231,7 @@ subscriptions _ =
 getSplashpadStatus : Cmd Msg
 getSplashpadStatus =
     Http.get
-        { url = "http://localhost:3000/status"
+        { url = "/status"
         , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
         }
 
@@ -239,7 +239,7 @@ getSplashpadStatus =
 postVotes : String -> Cmd Msg
 postVotes vote =
     Http.post
-        { url = "http://localhost:3000/status"
+        { url = "/status"
         , body =
             Http.jsonBody
                 (Encode.object

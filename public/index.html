@@ -6188,7 +6188,7 @@ var $author$project$Main$splashPadGetResponseDecoder = A5(
 var $author$project$Main$getSplashpadStatus = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotStatus, $author$project$Main$splashPadGetResponseDecoder),
-		url: 'http://localhost:3000/status'
+		url: '/status'
 	});
 var $author$project$Main$Unknown = {$: 'Unknown'};
 var $author$project$Main$initialModel = $author$project$Main$Unknown;
@@ -6268,7 +6268,7 @@ var $author$project$Main$postVotes = function (vote) {
 							$elm$json$Json$Encode$string(vote))
 						]))),
 			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotStatus, $author$project$Main$splashPadGetResponseDecoder),
-			url: 'http://localhost:3000/status'
+			url: '/status'
 		});
 };
 var $author$project$Main$update = F2(
