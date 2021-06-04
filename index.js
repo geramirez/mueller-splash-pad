@@ -67,7 +67,7 @@ const calculateVoteWeight = (location) => {
   const branchParkLocation = { latitude: 30.300190, longitude: -97.702812 }
   if (location === undefined)
     return 1
-  if (arePointsNear(location, branchParkLocation, .2)p)
+  if (arePointsNear(location, branchParkLocation, .2))
   return 2
   return 1
 }
