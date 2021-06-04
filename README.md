@@ -1,4 +1,4 @@
-# mueller-splash-pad
+# Mueller Splashpad
 
 Is the splash pad open? I built this crowdsourcing site to answer that question. 
 [https://www.muellersplashpad.com/](www.muellersplashpad.com)
