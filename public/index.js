@@ -12653,12 +12653,12 @@ var $author$project$Main$isNotWorkingButton = function (colorPalette) {
 		$mdgriffith$elm_ui$Element$Input$button,
 		_List_fromArray(
 			[
-				$mdgriffith$elm_ui$Element$padding(30),
-				$mdgriffith$elm_ui$Element$Font$size(25),
+				$mdgriffith$elm_ui$Element$padding(45),
+				$mdgriffith$elm_ui$Element$Font$size(60),
 				$mdgriffith$elm_ui$Element$Background$color(colorPalette.primary),
 				$mdgriffith$elm_ui$Element$Border$color(colorPalette.tertiary),
 				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(1),
+				$mdgriffith$elm_ui$Element$Border$width(3),
 				$mdgriffith$elm_ui$Element$Border$rounded(10),
 				$mdgriffith$elm_ui$Element$focused(
 				_List_fromArray(
@@ -12678,12 +12678,12 @@ var $author$project$Main$isWorkingButton = function (colorPalette) {
 		$mdgriffith$elm_ui$Element$Input$button,
 		_List_fromArray(
 			[
-				$mdgriffith$elm_ui$Element$padding(30),
-				$mdgriffith$elm_ui$Element$Font$size(25),
+				$mdgriffith$elm_ui$Element$padding(45),
+				$mdgriffith$elm_ui$Element$Font$size(60),
 				$mdgriffith$elm_ui$Element$Background$color(colorPalette.primary),
 				$mdgriffith$elm_ui$Element$Border$color(colorPalette.tertiary),
 				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(1),
+				$mdgriffith$elm_ui$Element$Border$width(3),
 				$mdgriffith$elm_ui$Element$Border$rounded(10),
 				$mdgriffith$elm_ui$Element$focused(
 				_List_fromArray(

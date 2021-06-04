@@ -187,12 +187,12 @@ updateButtons model =
 isWorkingButton : ColorPalette -> Element.Element Msg
 isWorkingButton colorPalette =
     button
-        [ padding 30
-        , Font.size 25
+        [ padding 45
+        , Font.size 60
         , Background.color colorPalette.primary
         , Border.color colorPalette.tertiary
         , Border.solid
-        , Border.width 1
+        , Border.width 3
         , Border.rounded 10
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
@@ -205,12 +205,12 @@ isWorkingButton colorPalette =
 isNotWorkingButton : ColorPalette -> Element.Element Msg
 isNotWorkingButton colorPalette =
     button
-        [ padding 30
-        , Font.size 25
+        [ padding 45
+        , Font.size 60
         , Background.color colorPalette.primary
         , Border.color colorPalette.tertiary
         , Border.solid
-        , Border.width 1
+        , Border.width 3
         , Border.rounded 10
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
