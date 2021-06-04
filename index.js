@@ -19,20 +19,22 @@ class StatusRepository {
     this.votes = db.addCollection('votes');
   }
 
-  addOnVote() {
-    this.votes.insertOne({ status: true, timestamp: new Date() })
+  addOnVote(weight) {
+    for (var i = 0; i < weight; i++)
+      this.votes.insertOne({ status: true, timestamp: new Date() })
   }
 
-  addOffVote() {
-    this.votes.insertOne({ status: false, timestamp: new Date() })
+  addOffVote(weight) {
+    for (var i = 0; i < weight; i++)
+      this.votes.insertOne({ status: false, timestamp: new Date() })
   }
 
   getLastVoteTime() {
-    const voteDates =  this.votes
-      .find({timestamp: { $gte: oneHourAgo() } })
+    const voteDates = this.votes
+      .find({ timestamp: { $gte: oneHourAgo() } })
       .map(v => v.timestamp)
 
-    if(voteDates.length > 0)
+    if (voteDates.length > 0)
       return voteDates.reduce(function (a, b) { return a > b ? a : b; })
     return 'N/A'
   }
@@ -40,33 +42,53 @@ class StatusRepository {
   getStatus() {
     const workingVotes = this.votes.count({ status: true, timestamp: { $gte: oneHourAgo() } })
     const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: oneHourAgo() } })
-    this.votes.findAndRemove({timestamp :{ $lt: oneHourAgo() }})
+    this.votes.findAndRemove({ timestamp: { $lt: oneHourAgo() } })
     if (workingVotes === notWorkingVotes) {
-      return {status: "unknown", workingVotes, notWorkingVotes}
+      return { status: "unknown", workingVotes, notWorkingVotes }
     } else if (workingVotes > notWorkingVotes) {
-      return {status: "working", workingVotes, notWorkingVotes}
+      return { status: "working", workingVotes, notWorkingVotes }
     } else {
-      return {status: "not working", workingVotes, notWorkingVotes}
+      return { status: "not working", workingVotes, notWorkingVotes }
     }
   }
+}
+
+function arePointsNear(checkPoint, centerPoint, km) {
+  var ky = 40000 / 360;
+  var kx = Math.cos(Math.PI * centerPoint.latitude / 180.0) * ky;
+  var dx = Math.abs(centerPoint.longitude - checkPoint.longitude) * kx;
+  var dy = Math.abs(centerPoint.latitude - checkPoint.latitude) * ky;
+  console.log(Math.sqrt(dx * dx + dy * dy), km)
+  return Math.sqrt(dx * dx + dy * dy) <= km;
+}
+
+
+const calculateVoteWeight = (location) => {
+  const branchParkLocation = { latitude: 30.300190, longitude: -97.702812 }
+  if (location === undefined)
+    return 1
+  if (arePointsNear(location, branchParkLocation, .2)p)
+  return 2
+  return 1
 }
 
 
 const statusRepository = new StatusRepository()
 
-app.get('/status', (req, res) => {
-  const {status, workingVotes, notWorkingVotes} = statusRepository.getStatus()
-  res.json({ status , votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(), voted: false })
+app.get('/status', (_, res) => {
+  const { status, workingVotes, notWorkingVotes } = statusRepository.getStatus()
+  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime() })
 })
 
 
 app.post('/status', (req, res) => {
-  if (req.body.vote === 'on')
-    statusRepository.addOnVote()
-  else if (req.body.vote === 'off')
-    statusRepository.addOffVote()
-  const {status, workingVotes, notWorkingVotes} = statusRepository.getStatus()
-  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(), voted: true })
+  const { vote, location } = req.body
+  if (vote === 'on')
+    statusRepository.addOnVote(calculateVoteWeight(location))
+  else if (vote === 'off')
+    statusRepository.addOffVote(calculateVoteWeight(location))
+  const { status, workingVotes, notWorkingVotes } = statusRepository.getStatus()
+  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime() })
 })
 
 

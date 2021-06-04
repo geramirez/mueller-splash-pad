@@ -5360,9 +5360,9 @@ var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Main$NotVoted = {$: 'NotVoted'};
-var $author$project$Main$Unknown = F2(
-	function (a, b) {
-		return {$: 'Unknown', a: a, b: b};
+var $author$project$Main$Unknown = F3(
+	function (a, b, c) {
+		return {$: 'Unknown', a: a, b: b, c: c};
 	});
 var $author$project$Main$GotStatus = function (a) {
 	return {$: 'GotStatus', a: a};
@@ -6154,12 +6154,11 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Main$StatusResponse = F4(
-	function (status, votes, updated_at, voted) {
-		return {status: status, updated_at: updated_at, voted: voted, votes: votes};
+var $author$project$Main$StatusResponseData = F3(
+	function (status, votes, updated_at) {
+		return {status: status, updated_at: updated_at, votes: votes};
 	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Decode$map4 = _Json_map4;
+var $elm$json$Json$Decode$map3 = _Json_map3;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$VoteResponse = F2(
 	function (working, not_working) {
@@ -6171,13 +6170,12 @@ var $author$project$Main$voteResponseDecoder = A3(
 	$author$project$Main$VoteResponse,
 	A2($elm$json$Json$Decode$field, 'working', $elm$json$Json$Decode$int),
 	A2($elm$json$Json$Decode$field, 'not_working', $elm$json$Json$Decode$int));
-var $author$project$Main$splashPadGetResponseDecoder = A5(
-	$elm$json$Json$Decode$map4,
-	$author$project$Main$StatusResponse,
+var $author$project$Main$splashPadGetResponseDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Main$StatusResponseData,
 	A2($elm$json$Json$Decode$field, 'status', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'votes', $author$project$Main$voteResponseDecoder),
-	A2($elm$json$Json$Decode$field, 'updated_at', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'voted', $elm$json$Json$Decode$bool));
+	A2($elm$json$Json$Decode$field, 'updated_at', $elm$json$Json$Decode$string));
 var $author$project$Main$getSplashpadStatus = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotStatus, $author$project$Main$splashPadGetResponseDecoder),
@@ -6185,7 +6183,7 @@ var $author$project$Main$getSplashpadStatus = $elm$http$Http$get(
 	});
 var $author$project$Main$init = function (geolocation) {
 	return _Utils_Tuple2(
-		A2($author$project$Main$Unknown, geolocation, $author$project$Main$NotVoted),
+		A3($author$project$Main$Unknown, geolocation, $elm$core$Maybe$Nothing, $author$project$Main$NotVoted),
 		$author$project$Main$getSplashpadStatus);
 };
 var $elm$json$Json$Decode$null = _Json_decodeNull;
@@ -6217,34 +6215,38 @@ var $author$project$Main$On = F3(
 	function (a, b, c) {
 		return {$: 'On', a: a, b: b, c: c};
 	});
-var $author$project$Main$getIfVoted = function (statusResponse) {
-	return statusResponse.voted ? $author$project$Main$Voted : $author$project$Main$NotVoted;
-};
-var $author$project$Main$getStatus = F2(
-	function (statusResponse, geolocation) {
-		var _v0 = statusResponse.status;
-		switch (_v0) {
+var $author$project$Main$getStatus = function (statusResponse) {
+	if (statusResponse.$ === 'Just') {
+		var statusResponseData = statusResponse.a;
+		var _v1 = statusResponseData.status;
+		switch (_v1) {
 			case 'working':
-				return A3(
-					$author$project$Main$On,
-					geolocation,
-					statusResponse,
-					$author$project$Main$getIfVoted(statusResponse));
+				return $author$project$Main$On;
 			case 'not working':
-				return A3(
-					$author$project$Main$Off,
-					geolocation,
-					statusResponse,
-					$author$project$Main$getIfVoted(statusResponse));
+				return $author$project$Main$Off;
 			default:
-				return A2(
-					$author$project$Main$Unknown,
-					geolocation,
-					$author$project$Main$getIfVoted(statusResponse));
+				return $author$project$Main$Unknown;
 		}
-	});
+	} else {
+		return $author$project$Main$Unknown;
+	}
+};
+var $author$project$Main$getVoted = function (model) {
+	switch (model.$) {
+		case 'Unknown':
+			var hasVoted = model.c;
+			return hasVoted;
+		case 'On':
+			var hasVoted = model.c;
+			return hasVoted;
+		default:
+			var hasVoted = model.c;
+			return hasVoted;
+	}
+};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$http$Http$jsonBody = function (value) {
 	return A2(
 		_Http_pair,
@@ -6269,21 +6271,46 @@ var $elm$http$Http$post = function (r) {
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Main$postVotes = function (vote) {
-	return $elm$http$Http$post(
-		{
-			body: $elm$http$Http$jsonBody(
-				$elm$json$Json$Encode$object(
-					_List_fromArray(
-						[
-							_Utils_Tuple2(
-							'vote',
-							$elm$json$Json$Encode$string(vote))
-						]))),
-			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotStatus, $author$project$Main$splashPadGetResponseDecoder),
-			url: '/status'
-		});
-};
+var $author$project$Main$postVotes = F2(
+	function (vote, geolocation) {
+		var payload = function () {
+			if (geolocation.$ === 'Nothing') {
+				return _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'vote',
+						$elm$json$Json$Encode$string(vote))
+					]);
+			} else {
+				var geolocationData = geolocation.a;
+				return _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'vote',
+						$elm$json$Json$Encode$string(vote)),
+						_Utils_Tuple2(
+						'location',
+						$elm$json$Json$Encode$object(
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'latitude',
+									$elm$json$Json$Encode$float(geolocationData.coords.latitude)),
+									_Utils_Tuple2(
+									'longitude',
+									$elm$json$Json$Encode$float(geolocationData.coords.longitude))
+								])))
+					]);
+			}
+		}();
+		return $elm$http$Http$post(
+			{
+				body: $elm$http$Http$jsonBody(
+					$elm$json$Json$Encode$object(payload)),
+				expect: A2($elm$http$Http$expectJson, $author$project$Main$GotStatus, $author$project$Main$splashPadGetResponseDecoder),
+				url: '/status'
+			});
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6292,34 +6319,42 @@ var $author$project$Main$update = F2(
 				if (result.$ === 'Ok') {
 					var statusResponse = result.a;
 					return _Utils_Tuple2(
-						A2(
+						A4(
 							$author$project$Main$getStatus,
-							statusResponse,
-							$author$project$Main$getGeolocation(model)),
+							$elm$core$Maybe$Just(statusResponse),
+							$author$project$Main$getGeolocation(model),
+							$elm$core$Maybe$Just(statusResponse),
+							$author$project$Main$getVoted(model)),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(
-						A2(
+						A3(
 							$author$project$Main$Unknown,
 							$author$project$Main$getGeolocation(model),
-							$author$project$Main$Voted),
+							$elm$core$Maybe$Nothing,
+							$author$project$Main$NotVoted),
 						$elm$core$Platform$Cmd$none);
 				}
 			case 'Loading':
 				return _Utils_Tuple2(
-					A2(
+					A3(
 						$author$project$Main$Unknown,
 						$author$project$Main$getGeolocation(model),
-						$author$project$Main$Voted),
+						$elm$core$Maybe$Nothing,
+						$author$project$Main$NotVoted),
 					$elm$core$Platform$Cmd$none);
 			default:
 				var vote = msg.a;
 				return _Utils_Tuple2(
-					A2(
+					A3(
 						$author$project$Main$Unknown,
 						$author$project$Main$getGeolocation(model),
+						$elm$core$Maybe$Nothing,
 						$author$project$Main$Voted),
-					$author$project$Main$postVotes(vote));
+					A2(
+						$author$project$Main$postVotes,
+						vote,
+						$author$project$Main$getGeolocation(model)));
 		}
 	});
 var $mdgriffith$elm_ui$Internal$Model$AlignX = function (a) {
@@ -12664,46 +12699,29 @@ var $author$project$Main$isWorkingButton = function (colorPalette) {
 		});
 };
 var $author$project$Main$updateButtons = function (model) {
-	_v0$6:
+	_v0$3:
 	while (true) {
 		switch (model.$) {
 			case 'On':
-				if (model.c.$ === 'NotVoted') {
-					if (model.a.$ === 'Nothing') {
-						var _v1 = model.a;
-						var _v2 = model.c;
-						return _List_Nil;
-					} else {
-						break _v0$6;
-					}
-				} else {
-					var _v5 = model.c;
+				if (model.c.$ === 'Voted') {
+					var _v1 = model.c;
 					return _List_Nil;
+				} else {
+					break _v0$3;
 				}
 			case 'Off':
-				if (model.c.$ === 'NotVoted') {
-					if (model.a.$ === 'Nothing') {
-						var _v3 = model.a;
-						var _v4 = model.c;
-						return _List_Nil;
-					} else {
-						break _v0$6;
-					}
-				} else {
-					var _v6 = model.c;
+				if (model.c.$ === 'Voted') {
+					var _v2 = model.c;
 					return _List_Nil;
+				} else {
+					break _v0$3;
 				}
 			default:
-				if (model.b.$ === 'Voted') {
-					var _v7 = model.b;
+				if (model.c.$ === 'Voted') {
+					var _v3 = model.c;
 					return _List_Nil;
 				} else {
-					if (model.a.$ === 'Nothing') {
-						var _v8 = model.a;
-						return _List_Nil;
-					} else {
-						break _v0$6;
-					}
+					break _v0$3;
 				}
 		}
 	}
@@ -12717,16 +12735,33 @@ var $author$project$Main$updateButtons = function (model) {
 };
 var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Main$updatedText = function (model) {
-	switch (model.$) {
-		case 'On':
-			var statusResponse = model.b;
-			return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
-		case 'Off':
-			var statusResponse = model.b;
-			return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
-		default:
-			return '';
+	_v0$3:
+	while (true) {
+		switch (model.$) {
+			case 'On':
+				if (model.b.$ === 'Just') {
+					var statusResponse = model.b.a;
+					return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
+				} else {
+					break _v0$3;
+				}
+			case 'Off':
+				if (model.b.$ === 'Just') {
+					var statusResponse = model.b.a;
+					return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
+				} else {
+					break _v0$3;
+				}
+			default:
+				if (model.b.$ === 'Just') {
+					var statusResponse = model.b.a;
+					return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
+				} else {
+					break _v0$3;
+				}
+		}
 	}
+	return '';
 };
 var $author$project$Main$view = function (model) {
 	return {

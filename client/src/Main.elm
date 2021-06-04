@@ -8,7 +8,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Http
-import Json.Decode exposing (bool, field, int, map2, map4, string)
+import Json.Decode exposing (field, int, map2, map3, string)
 import Json.Encode as Encode
 
 
@@ -30,7 +30,7 @@ type HasVoted
 type SpashPadStatus
     = On Flags StatusResponse HasVoted
     | Off Flags StatusResponse HasVoted
-    | Unknown Flags HasVoted
+    | Unknown Flags StatusResponse HasVoted
 
 
 type alias Model =
@@ -47,13 +47,13 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init geolocation =
-    ( Unknown geolocation NotVoted, getSplashpadStatus )
+    ( Unknown geolocation Nothing NotVoted, getSplashpadStatus )
 
 
 type Msg
     = Loading
     | SendVote String
-    | GotStatus (Result Http.Error StatusResponse)
+    | GotStatus (Result Http.Error StatusResponseData)
 
 
 getIfVoted statusResponse =
@@ -64,35 +64,43 @@ getIfVoted statusResponse =
         NotVoted
 
 
-getStatus statusResponse geolocation =
-    case statusResponse.status of
-        "working" ->
-            On geolocation statusResponse (getIfVoted statusResponse)
+getStatus statusResponse =
+    case statusResponse of
+        Just statusResponseData ->
+            case statusResponseData.status of
+                "working" ->
+                    On
 
-        "not working" ->
-            Off geolocation statusResponse (getIfVoted statusResponse)
+                "not working" ->
+                    Off
 
-        _ ->
-            Unknown geolocation (getIfVoted statusResponse)
+                _ ->
+                    Unknown
+
+        Nothing ->
+            Unknown
 
 
 updatedText : Model -> String
 updatedText model =
     case model of
-        On _ statusResponse _ ->
+        On _ (Just statusResponse) _ ->
             " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
-        Off _ statusResponse _ ->
+        Off _ (Just statusResponse) _ ->
             " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
-        Unknown _ _ ->
+        Unknown _ (Just statusResponse) _ ->
+            " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
+
+        _ ->
             ""
 
 
 getGeolocation : SpashPadStatus -> Flags
 getGeolocation model =
     case model of
-        Unknown geolocation _ ->
+        Unknown geolocation _ _ ->
             geolocation
 
         On geolocation _ _ ->
@@ -102,22 +110,35 @@ getGeolocation model =
             geolocation
 
 
+getVoted : SpashPadStatus -> HasVoted
+getVoted model =
+    case model of
+        Unknown _ _ hasVoted ->
+            hasVoted
+
+        On _ _ hasVoted ->
+            hasVoted
+
+        Off _ _ hasVoted ->
+            hasVoted
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotStatus result ->
             case result of
                 Ok statusResponse ->
-                    ( getStatus statusResponse (getGeolocation model), Cmd.none )
+                    ( getStatus (Just statusResponse) (getGeolocation model) (Just statusResponse) (getVoted model), Cmd.none )
 
                 Err _ ->
-                    ( Unknown (getGeolocation model) Voted, Cmd.none )
+                    ( Unknown (getGeolocation model) Nothing NotVoted, Cmd.none )
 
         Loading ->
-            ( Unknown (getGeolocation model) Voted, Cmd.none )
+            ( Unknown (getGeolocation model) Nothing NotVoted, Cmd.none )
 
         SendVote vote ->
-            ( Unknown (getGeolocation model) Voted, postVotes vote )
+            ( Unknown (getGeolocation model) Nothing Voted, postVotes vote (getGeolocation model) )
 
 
 view : Model -> Browser.Document Msg
@@ -150,22 +171,13 @@ view model =
 updateButtons : SpashPadStatus -> List (Element.Element Msg)
 updateButtons model =
     case model of
-        On Nothing _ NotVoted ->
-            []
-
-        Off Nothing _ NotVoted ->
-            []
-
         On _ _ Voted ->
             []
 
         Off _ _ Voted ->
             []
 
-        Unknown _ Voted ->
-            []
-
-        Unknown Nothing _ ->
+        Unknown _ _ Voted ->
             []
 
         _ ->
@@ -222,7 +234,7 @@ displayText model =
         On _ _ _ ->
             "Working!"
 
-        Unknown _ _ ->
+        Unknown _ _ _ ->
             "Unknown"
 
 
@@ -242,7 +254,7 @@ getColorPalette model =
         On _ _ _ ->
             { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
 
-        Unknown _ _ ->
+        Unknown _ _ _ ->
             { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
 
 
@@ -251,7 +263,6 @@ subscriptions _ =
     Sub.none
 
 
-getSplashpadStatus : Cmd Msg
 getSplashpadStatus =
     Http.get
         { url = "/status"
@@ -259,16 +270,30 @@ getSplashpadStatus =
         }
 
 
-postVotes : String -> Cmd Msg
-postVotes vote =
+postVotes : String -> Geolocation -> Cmd Msg
+postVotes vote geolocation =
+    let
+        payload =
+            case geolocation of
+                Nothing ->
+                    [ ( "vote", Encode.string vote )
+                    ]
+
+                Just geolocationData ->
+                    [ ( "vote", Encode.string vote )
+                    , ( "location"
+                      , Encode.object
+                            [ ( "latitude", Encode.float geolocationData.coords.latitude  )
+                            , ( "longitude", Encode.float geolocationData.coords.longitude )
+                            ]
+                      )
+                    ]
+    in
     Http.post
         { url = "/status"
         , body =
             Http.jsonBody
-                (Encode.object
-                    [ ( "vote", Encode.string vote )
-                    ]
-                )
+                (Encode.object payload)
         , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
         }
 
@@ -277,22 +302,26 @@ type alias VoteResponse =
     { working : Int, not_working : Int }
 
 
-type alias StatusResponse =
+type alias StatusResponseData =
     { status : String
     , votes : VoteResponse
     , updated_at : String
-    , voted : Bool
     }
 
 
+type alias StatusResponse =
+    Maybe StatusResponseData
+
+
+splashPadGetResponseDecoder : Json.Decode.Decoder StatusResponseData
 splashPadGetResponseDecoder =
-    map4 StatusResponse
+    map3 StatusResponseData
         (field "status" string)
         (field "votes" voteResponseDecoder)
         (field "updated_at" string)
-        (field "voted" bool)
 
 
+voteResponseDecoder : Json.Decode.Decoder VoteResponse
 voteResponseDecoder =
     map2 VoteResponse
         (field "working" int)
