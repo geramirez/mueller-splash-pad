@@ -56,14 +56,7 @@ type Msg
     | GotStatus (Result Http.Error StatusResponseData)
 
 
-getIfVoted statusResponse =
-    if statusResponse.voted then
-        Voted
-
-    else
-        NotVoted
-
-
+getStatus : StatusResponse -> Flags -> StatusResponse -> HasVoted -> SpashPadStatus
 getStatus statusResponse =
     case statusResponse of
         Just statusResponseData ->
@@ -85,13 +78,13 @@ updatedText : Model -> String
 updatedText model =
     case model of
         On _ (Just statusResponse) _ ->
-            " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
+            " Last Update: " ++ statusResponse.updated_at ++ "\nWorking: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
         Off _ (Just statusResponse) _ ->
-            " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
+            " Last Update: " ++ statusResponse.updated_at ++ "\nWorking: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
         Unknown _ (Just statusResponse) _ ->
-            " Last updated at: " ++ statusResponse.updated_at ++ "\n Votes -- Working: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
+            " Last Update: " ++ statusResponse.updated_at ++ "\nWorking: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
 
         _ ->
             ""
@@ -181,7 +174,25 @@ updateButtons model =
             []
 
         _ ->
-            [ isWorkingButton (getColorPalette model), isNotWorkingButton (getColorPalette model) ]
+            [ buildWorkingButton (getColorPalette model) "on" "Working", buildWorkingButton (getColorPalette model) "off" "Not Working" ]
+
+
+buildWorkingButton : ColorPalette -> String -> String -> Element.Element Msg
+buildWorkingButton colorPalette onPressPayload label =
+    button
+        [ padding 45
+        , Font.size 60
+        , Background.color colorPalette.primary
+        , Border.color colorPalette.secondary
+        , Border.solid
+        , Border.width 3
+        , Border.rounded 10
+        , Element.focused
+            [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
+        ]
+        { onPress = Just (SendVote onPressPayload)
+        , label = text label
+        }
 
 
 isWorkingButton : ColorPalette -> Element.Element Msg
@@ -190,7 +201,7 @@ isWorkingButton colorPalette =
         [ padding 45
         , Font.size 60
         , Background.color colorPalette.primary
-        , Border.color colorPalette.tertiary
+        , Border.color colorPalette.secondary
         , Border.solid
         , Border.width 3
         , Border.rounded 10
@@ -208,7 +219,7 @@ isNotWorkingButton colorPalette =
         [ padding 45
         , Font.size 60
         , Background.color colorPalette.primary
-        , Border.color colorPalette.tertiary
+        , Border.color colorPalette.secondary
         , Border.solid
         , Border.width 3
         , Border.rounded 10
@@ -222,20 +233,20 @@ isNotWorkingButton colorPalette =
 
 statusElement : SpashPadStatus -> Element.Element msg
 statusElement model =
-    el [ Font.size 200 ] (displayText model |> text)
+    el [ Font.size 150, Font.center ] (displayText model |> text)
 
 
 displayText : SpashPadStatus -> String
 displayText model =
     case model of
         Off _ _ _ ->
-            "Not \n Working"
+            "Awww :(\nIt's not working"
 
         On _ _ _ ->
-            "Working!"
+            "Hurray!\nIt's working"
 
         Unknown _ _ _ ->
-            "Unknown"
+            "Not Sure..."
 
 
 type alias ColorPalette =
@@ -283,7 +294,7 @@ postVotes vote geolocation =
                     [ ( "vote", Encode.string vote )
                     , ( "location"
                       , Encode.object
-                            [ ( "latitude", Encode.float geolocationData.coords.latitude  )
+                            [ ( "latitude", Encode.float geolocationData.coords.latitude )
                             , ( "longitude", Encode.float geolocationData.coords.longitude )
                             ]
                       )

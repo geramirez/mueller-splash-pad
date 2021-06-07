@@ -1,7 +1,11 @@
 const express = require('express')
+const TimeAgo = require('javascript-time-ago')
 const loki = require('lokijs')
+const en =  require('javascript-time-ago/locale/en')
 
+TimeAgo.addDefaultLocale(en)
 
+const timeAgo = new TimeAgo('en-US')
 const app = express()
 app.use(express.json());
 const PORT = process.env.PORT || 3000
@@ -35,7 +39,8 @@ class StatusRepository {
       .map(v => v.timestamp)
 
     if (voteDates.length > 0)
-      return voteDates.reduce(function (a, b) { return a > b ? a : b; })
+      return timeAgo.format(voteDates.reduce(function (a, b) { return a > b ? a : b; }))
+
     return 'N/A'
   }
 

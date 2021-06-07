@@ -12290,14 +12290,16 @@ var $mdgriffith$elm_ui$Element$spacing = function (x) {
 			x,
 			x));
 };
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $author$project$Main$displayText = function (model) {
 	switch (model.$) {
 		case 'Off':
-			return 'Not \n Working';
+			return 'Awww :(\nIt\'s not working';
 		case 'On':
-			return 'Working!';
+			return 'Hurray!\nIt\'s working';
 		default:
-			return 'Unknown';
+			return 'Not Sure...';
 	}
 };
 var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
@@ -12311,7 +12313,8 @@ var $author$project$Main$statusElement = function (model) {
 		$mdgriffith$elm_ui$Element$el,
 		_List_fromArray(
 			[
-				$mdgriffith$elm_ui$Element$Font$size(200)
+				$mdgriffith$elm_ui$Element$Font$size(150),
+				$mdgriffith$elm_ui$Element$Font$center
 			]),
 		$mdgriffith$elm_ui$Element$text(
 			$author$project$Main$displayText(model)));
@@ -12648,56 +12651,32 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 			v,
 			v));
 };
-var $author$project$Main$isNotWorkingButton = function (colorPalette) {
-	return A2(
-		$mdgriffith$elm_ui$Element$Input$button,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$padding(45),
-				$mdgriffith$elm_ui$Element$Font$size(60),
-				$mdgriffith$elm_ui$Element$Background$color(colorPalette.primary),
-				$mdgriffith$elm_ui$Element$Border$color(colorPalette.tertiary),
-				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(3),
-				$mdgriffith$elm_ui$Element$Border$rounded(10),
-				$mdgriffith$elm_ui$Element$focused(
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$Background$color(colorPalette.secondary),
-						$mdgriffith$elm_ui$Element$Font$color(colorPalette.primary)
-					]))
-			]),
-		{
-			label: $mdgriffith$elm_ui$Element$text('It\'s Not Working'),
-			onPress: $elm$core$Maybe$Just(
-				$author$project$Main$SendVote('off'))
-		});
-};
-var $author$project$Main$isWorkingButton = function (colorPalette) {
-	return A2(
-		$mdgriffith$elm_ui$Element$Input$button,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$padding(45),
-				$mdgriffith$elm_ui$Element$Font$size(60),
-				$mdgriffith$elm_ui$Element$Background$color(colorPalette.primary),
-				$mdgriffith$elm_ui$Element$Border$color(colorPalette.tertiary),
-				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(3),
-				$mdgriffith$elm_ui$Element$Border$rounded(10),
-				$mdgriffith$elm_ui$Element$focused(
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$Background$color(colorPalette.secondary),
-						$mdgriffith$elm_ui$Element$Font$color(colorPalette.primary)
-					]))
-			]),
-		{
-			label: $mdgriffith$elm_ui$Element$text('It\'s Working'),
-			onPress: $elm$core$Maybe$Just(
-				$author$project$Main$SendVote('on'))
-		});
-};
+var $author$project$Main$buildWorkingButton = F3(
+	function (colorPalette, onPressPayload, label) {
+		return A2(
+			$mdgriffith$elm_ui$Element$Input$button,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$padding(45),
+					$mdgriffith$elm_ui$Element$Font$size(60),
+					$mdgriffith$elm_ui$Element$Background$color(colorPalette.primary),
+					$mdgriffith$elm_ui$Element$Border$color(colorPalette.secondary),
+					$mdgriffith$elm_ui$Element$Border$solid,
+					$mdgriffith$elm_ui$Element$Border$width(3),
+					$mdgriffith$elm_ui$Element$Border$rounded(10),
+					$mdgriffith$elm_ui$Element$focused(
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$Background$color(colorPalette.secondary),
+							$mdgriffith$elm_ui$Element$Font$color(colorPalette.primary)
+						]))
+				]),
+			{
+				label: $mdgriffith$elm_ui$Element$text(label),
+				onPress: $elm$core$Maybe$Just(
+					$author$project$Main$SendVote(onPressPayload))
+			});
+	});
 var $author$project$Main$updateButtons = function (model) {
 	_v0$3:
 	while (true) {
@@ -12727,10 +12706,16 @@ var $author$project$Main$updateButtons = function (model) {
 	}
 	return _List_fromArray(
 		[
-			$author$project$Main$isWorkingButton(
-			$author$project$Main$getColorPalette(model)),
-			$author$project$Main$isNotWorkingButton(
-			$author$project$Main$getColorPalette(model))
+			A3(
+			$author$project$Main$buildWorkingButton,
+			$author$project$Main$getColorPalette(model),
+			'on',
+			'Working'),
+			A3(
+			$author$project$Main$buildWorkingButton,
+			$author$project$Main$getColorPalette(model),
+			'off',
+			'Not Working')
 		]);
 };
 var $elm$core$Debug$toString = _Debug_toString;
@@ -12741,21 +12726,21 @@ var $author$project$Main$updatedText = function (model) {
 			case 'On':
 				if (model.b.$ === 'Just') {
 					var statusResponse = model.b.a;
-					return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
+					return ' Last Update: ' + (statusResponse.updated_at + ('\nWorking: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
 				} else {
 					break _v0$3;
 				}
 			case 'Off':
 				if (model.b.$ === 'Just') {
 					var statusResponse = model.b.a;
-					return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
+					return ' Last Update: ' + (statusResponse.updated_at + ('\nWorking: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
 				} else {
 					break _v0$3;
 				}
 			default:
 				if (model.b.$ === 'Just') {
 					var statusResponse = model.b.a;
-					return ' Last updated at: ' + (statusResponse.updated_at + ('\n Votes -- Working: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
+					return ' Last Update: ' + (statusResponse.updated_at + ('\nWorking: ' + ($elm$core$Debug$toString(statusResponse.votes.working) + (' | Not Working: ' + $elm$core$Debug$toString(statusResponse.votes.not_working)))));
 				} else {
 					break _v0$3;
 				}
