@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Debug exposing (toString)
-import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, link, padding, rgb255, row, spacing, text, width)
+import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, link, padding, paddingEach, paddingXY, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -140,19 +140,19 @@ view model =
     , body =
         [ layout
             [ Background.color (getColorPalette model).primary, Font.color (getColorPalette model).secondary, padding 30 ]
-            (column [ height fill, width fill, spacing 20 ]
+            (column [ height fill, width fill, spacing 30 ]
                 [ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ]
                 , row [ centerY, centerX ] [ statusElement model ]
                 , row [ centerY, centerX ] [ el [ Font.size 30 ] (text (updatedText model)) ]
-                , row [ centerX ]
+                , row [ centerX, paddingEach { top = 0, left = 0, right = 0, bottom = 200 } ]
                     [ column []
                         [ row [ spacing 20 ] (updateButtons model)
                         ]
                     ]
                 , row [ centerX ]
-                    [ link [ Font.size 10, Font.color (rgb255 0 0 0), Font.underline, Font.extraBold ]
+                    [ link [ Font.size 20, Font.color (rgb255 0 0 0), Font.underline, Font.center, Font.extraBold ]
                         { url = "https://github.com/geramirez/mueller-splash-pad"
-                        , label = text "Visit Github Source Code to report issues"
+                        , label = text "Visit Github Source Code"
                         }
                     ]
                 ]
@@ -187,47 +187,12 @@ buildWorkingButton colorPalette onPressPayload label =
         , Border.solid
         , Border.width 3
         , Border.rounded 10
+        , Border.shadow { blur = 3.0, offset = ( 2.0, 3.0 ), size = 3, color = rgb255 30 30 30 }
         , Element.focused
             [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
         ]
         { onPress = Just (SendVote onPressPayload)
         , label = text label
-        }
-
-
-isWorkingButton : ColorPalette -> Element.Element Msg
-isWorkingButton colorPalette =
-    button
-        [ padding 45
-        , Font.size 60
-        , Background.color colorPalette.primary
-        , Border.color colorPalette.secondary
-        , Border.solid
-        , Border.width 3
-        , Border.rounded 10
-        , Element.focused
-            [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
-        ]
-        { onPress = Just (SendVote "on")
-        , label = text "It's Working"
-        }
-
-
-isNotWorkingButton : ColorPalette -> Element.Element Msg
-isNotWorkingButton colorPalette =
-    button
-        [ padding 45
-        , Font.size 60
-        , Background.color colorPalette.primary
-        , Border.color colorPalette.secondary
-        , Border.solid
-        , Border.width 3
-        , Border.rounded 10
-        , Element.focused
-            [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
-        ]
-        { onPress = Just (SendVote "off")
-        , label = text "It's Not Working"
         }
 
 
