@@ -10,6 +10,11 @@ import Element.Input exposing (button)
 import Http
 import Json.Decode exposing (field, int, map2, map3, string)
 import Json.Encode as Encode
+import Loading
+    exposing
+        ( defaultConfig
+        , render
+        )
 
 
 main : Program Flags Model Msg
@@ -31,6 +36,7 @@ type SpashPadStatus
     = On Flags StatusResponse HasVoted
     | Off Flags StatusResponse HasVoted
     | Unknown Flags StatusResponse HasVoted
+    | LoadingPage Flags StatusResponse HasVoted
 
 
 type alias Model =
@@ -74,17 +80,31 @@ getStatus statusResponse =
             Unknown
 
 
+getStatusResponse : SpashPadStatus -> StatusResponse
+getStatusResponse model =
+    case model of
+        Unknown _ statusResponse _ ->
+            statusResponse
+
+        On _ statusResponse _ ->
+            statusResponse
+
+        Off _ statusResponse _ ->
+            statusResponse
+
+        LoadingPage _ statusResponse _ ->
+            statusResponse
+
+
 updatedText : Model -> String
 updatedText model =
-    case model of
-        On _ (Just statusResponse) _ ->
-            " Last Update: " ++ statusResponse.updated_at ++ "\nWorking: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
-
-        Off _ (Just statusResponse) _ ->
-            " Last Update: " ++ statusResponse.updated_at ++ "\nWorking: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
-
-        Unknown _ (Just statusResponse) _ ->
-            " Last Update: " ++ statusResponse.updated_at ++ "\nWorking: " ++ toString statusResponse.votes.working ++ " | Not Working: " ++ toString statusResponse.votes.not_working
+    let
+        statusResponse =
+            getStatusResponse model
+    in
+    case statusResponse of
+        Just statusResponseData ->
+            " Last Update: " ++ statusResponseData.updated_at ++ "\nWorking: " ++ toString statusResponseData.votes.working ++ " | Not Working: " ++ toString statusResponseData.votes.not_working
 
         _ ->
             ""
@@ -102,6 +122,9 @@ getGeolocation model =
         Off geolocation _ _ ->
             geolocation
 
+        LoadingPage geolocation _ _ ->
+            geolocation
+
 
 getVoted : SpashPadStatus -> HasVoted
 getVoted model =
@@ -113,6 +136,9 @@ getVoted model =
             hasVoted
 
         Off _ _ hasVoted ->
+            hasVoted
+
+        LoadingPage _ _ hasVoted ->
             hasVoted
 
 
@@ -128,10 +154,35 @@ update msg model =
                     ( Unknown (getGeolocation model) Nothing NotVoted, Cmd.none )
 
         Loading ->
-            ( Unknown (getGeolocation model) Nothing NotVoted, Cmd.none )
+            ( LoadingPage (getGeolocation model) Nothing NotVoted, Cmd.none )
 
         SendVote vote ->
-            ( Unknown (getGeolocation model) Nothing Voted, postVotes vote (getGeolocation model) )
+            ( LoadingPage (getGeolocation model) Nothing Voted, postVotes vote (getGeolocation model) )
+
+
+getContent model =
+    case model of
+        LoadingPage _ _ _ ->
+            [ row [ centerX, centerY ]
+                [ Element.html (Loading.render Loading.BouncingBalls { defaultConfig | color = "#333" } Loading.On)
+                ]
+            ]
+
+        _ ->
+            [ row [ centerY, centerX ] [ statusElement model ]
+            , row [ centerY, centerX ] [ el [ Font.size 30 ] (text (updatedText model)) ]
+            , row [ centerX, paddingEach { top = 0, left = 0, right = 0, bottom = 200 } ]
+                [ column []
+                    [ row [ spacing 20 ] (updateButtons model)
+                    ]
+                ]
+            , row [ centerX ]
+                [ link [ Font.size 20, Font.color (rgb255 0 0 0), Font.underline, Font.center, Font.extraBold ]
+                    { url = "https://github.com/geramirez/mueller-splash-pad"
+                    , label = text "Visit Github Source Code"
+                    }
+                ]
+            ]
 
 
 view : Model -> Browser.Document Msg
@@ -141,21 +192,7 @@ view model =
         [ layout
             [ Background.color (getColorPalette model).primary, Font.color (getColorPalette model).secondary, padding 30 ]
             (column [ height fill, width fill, spacing 30 ]
-                [ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ]
-                , row [ centerY, centerX ] [ statusElement model ]
-                , row [ centerY, centerX ] [ el [ Font.size 30 ] (text (updatedText model)) ]
-                , row [ centerX, paddingEach { top = 0, left = 0, right = 0, bottom = 200 } ]
-                    [ column []
-                        [ row [ spacing 20 ] (updateButtons model)
-                        ]
-                    ]
-                , row [ centerX ]
-                    [ link [ Font.size 20, Font.color (rgb255 0 0 0), Font.underline, Font.center, Font.extraBold ]
-                        { url = "https://github.com/geramirez/mueller-splash-pad"
-                        , label = text "Visit Github Source Code"
-                        }
-                    ]
-                ]
+                ([ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ] ] ++ getContent model)
             )
         ]
     }
@@ -213,6 +250,9 @@ displayText model =
         Unknown _ _ _ ->
             "Not Sure..."
 
+        LoadingPage _ _ _ ->
+            ""
+
 
 type alias ColorPalette =
     { primary : Color
@@ -231,6 +271,9 @@ getColorPalette model =
             { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
 
         Unknown _ _ _ ->
+            { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
+
+        LoadingPage _ _ _ ->
             { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
 
 
