@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "cd client && elm make src/Main.elm --output=../public/index.js && cd .. & node index.js",
+    "build": "cd client && elm make src/Main.elm --output=../public/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
