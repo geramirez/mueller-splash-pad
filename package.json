@@ -6,7 +6,6 @@
   "scripts": {
     "start": "npm run build && cd .. & node index.js",
     "startProd": "node index.js",
-    "build": "cd client && elm make src/Main.elm --output=../public/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
