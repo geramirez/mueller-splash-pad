@@ -63,7 +63,6 @@ function arePointsNear(checkPoint, centerPoint, km) {
   var kx = Math.cos(Math.PI * centerPoint.latitude / 180.0) * ky;
   var dx = Math.abs(centerPoint.longitude - checkPoint.longitude) * kx;
   var dy = Math.abs(centerPoint.latitude - checkPoint.latitude) * ky;
-  console.log(Math.sqrt(dx * dx + dy * dy), km)
   return Math.sqrt(dx * dx + dy * dy) <= km;
 }
 
@@ -88,6 +87,7 @@ app.get('/status', (_, res) => {
 
 app.post('/status', (req, res) => {
   const { vote, location } = req.body
+  console.log(vote, location)
   if (vote === 'on')
     statusRepository.addOnVote(calculateVoteWeight(location))
   else if (vote === 'off')
