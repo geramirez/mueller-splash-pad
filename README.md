@@ -26,6 +26,6 @@ Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
 
 ### Run build Elm app and start backend
     ```bash
-    npm run start
+    npm run startDev
     ```
 
