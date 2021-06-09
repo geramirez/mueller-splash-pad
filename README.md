@@ -19,7 +19,7 @@ Visit Elm Install Page https://guide.elm-lang.org/install/elm.html
 
 Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
 
-### Install Node depdencies
+### Install Node dependencies
     ```bash
     npm i
     ```
