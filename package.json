@@ -4,9 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && cd .. & node index.js",
-    "startProd": "node index.js",
+    "startDev": "nodemon",
+    "build_client": "cd client &&  elm make src/Main.elm --output=../public/index.js && cd ..",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "nodemonConfig": {
+    "exec": "npm run build_client && npm run start",
+    "watch": ["./client/src/", "index.js"],
+    "ext": "elm,js",
+    "ignore": ["./public"]
   },
   "author": "",
   "license": "ISC",
@@ -17,5 +24,8 @@
   },
   "engines": {
     "node": "14.x"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }
