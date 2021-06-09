@@ -1,46 +1,13 @@
 module Main exposing (..)
 
-import Browser
-import Debug exposing (toString)
-import Element exposing (Color, centerX, centerY, column, el, fill, height, layout, link, padding, paddingEach, paddingXY, rgb255, row, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Element.Input exposing (button)
-import Http
-import Json.Decode exposing (field, int, map2, map3, string)
-import Json.Encode as Encode
-import Loading
-    exposing
-        ( defaultConfig
-        , render
-        )
-
-
-main : Program Flags Model Msg
-main =
-    Browser.document
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-type HasVoted
-    = Voted
-    | NotVoted
-
-
-type SpashPadStatus
-    = On Flags StatusResponse HasVoted
-    | Off Flags StatusResponse HasVoted
-    | Unknown Flags StatusResponse HasVoted
-    | LoadingPage Flags StatusResponse HasVoted
-
-
-type alias Model =
-    SpashPadStatus
+import AboutPage
+import Browser exposing (UrlRequest)
+import Browser.Hash as Hash
+import Browser.Navigation as Nav exposing (Key)
+import Html exposing (Html, div, text)
+import Routes exposing (Route)
+import SplashPadStatusPage
+import Url exposing (Url)
 
 
 type alias Geolocation =
@@ -51,230 +18,64 @@ type alias Flags =
     Geolocation
 
 
-init : Flags -> ( Model, Cmd Msg )
-init geolocation =
-    ( Unknown geolocation Nothing NotVoted, getSplashpadStatus )
+type alias Model =
+    { flags : Flags
+    , navKey : Key
+    , route : Route
+    , page : Page
+    }
+
+
+type Page
+    = PageNone
+    | PageSplashPadStatus SplashPadStatusPage.Model
+    | PageAbout AboutPage.Model
 
 
 type Msg
-    = Loading
-    | SendVote String
-    | GotStatus (Result Http.Error StatusResponseData)
+    = OnUrlChange Url
+    | OnUrlRequest UrlRequest
+    | MsgSplashPad SplashPadStatusPage.Msg
+    | MsgAboutPage AboutPage.Msg
 
 
-getStatus : StatusResponse -> Flags -> StatusResponse -> HasVoted -> SpashPadStatus
-getStatus statusResponse =
-    case statusResponse of
-        Just statusResponseData ->
-            case statusResponseData.status of
-                "working" ->
-                    On
-
-                "not working" ->
-                    Off
-
-                _ ->
-                    Unknown
-
-        Nothing ->
-            Unknown
-
-
-getStatusResponse : SpashPadStatus -> StatusResponse
-getStatusResponse model =
-    case model of
-        Unknown _ statusResponse _ ->
-            statusResponse
-
-        On _ statusResponse _ ->
-            statusResponse
-
-        Off _ statusResponse _ ->
-            statusResponse
-
-        LoadingPage _ statusResponse _ ->
-            statusResponse
-
-
-updatedText : Model -> String
-updatedText model =
+init : Flags -> Url -> Key -> ( Model, Cmd Msg )
+init flags url navKey =
     let
-        statusResponse =
-            getStatusResponse model
+        model =
+            { flags = flags
+            , navKey = navKey
+            , route = Routes.parseUrl url
+            , page = PageNone
+            }
     in
-    case statusResponse of
-        Just statusResponseData ->
-            " Last Update: " ++ statusResponseData.updated_at ++ "\nWorking: " ++ toString statusResponseData.votes.working ++ " | Not Working: " ++ toString statusResponseData.votes.not_working
-
-        _ ->
-            ""
+    ( model, Cmd.none )
+        |> loadCurrentPage
 
 
-getGeolocation : SpashPadStatus -> Flags
-getGeolocation model =
-    case model of
-        Unknown geolocation _ _ ->
-            geolocation
+loadCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+loadCurrentPage ( model, cmd ) =
+    let
+        ( page, newCmd ) =
+            case model.route of
+                Routes.SplashPadRoute ->
+                    let
+                        ( pageModel, pageCmd ) =
+                            SplashPadStatusPage.init model.flags
+                    in
+                    ( PageSplashPadStatus pageModel, Cmd.map MsgSplashPad pageCmd )
 
-        On geolocation _ _ ->
-            geolocation
+                Routes.AboutRoute ->
+                    let
+                        ( pageModel, pageCmd ) =
+                            AboutPage.init model.flags
+                    in
+                    ( PageAbout pageModel, Cmd.map MsgAboutPage pageCmd )
 
-        Off geolocation _ _ ->
-            geolocation
-
-        LoadingPage geolocation _ _ ->
-            geolocation
-
-
-getVoted : SpashPadStatus -> HasVoted
-getVoted model =
-    case model of
-        Unknown _ _ hasVoted ->
-            hasVoted
-
-        On _ _ hasVoted ->
-            hasVoted
-
-        Off _ _ hasVoted ->
-            hasVoted
-
-        LoadingPage _ _ hasVoted ->
-            hasVoted
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        GotStatus result ->
-            case result of
-                Ok statusResponse ->
-                    ( getStatus (Just statusResponse) (getGeolocation model) (Just statusResponse) (getVoted model), Cmd.none )
-
-                Err _ ->
-                    ( Unknown (getGeolocation model) Nothing NotVoted, Cmd.none )
-
-        Loading ->
-            ( LoadingPage (getGeolocation model) Nothing NotVoted, Cmd.none )
-
-        SendVote vote ->
-            ( LoadingPage (getGeolocation model) Nothing Voted, postVotes vote (getGeolocation model) )
-
-
-getContent model =
-    case model of
-        LoadingPage _ _ _ ->
-            [ row [ centerX, centerY ]
-                [ Element.html (Loading.render Loading.BouncingBalls { defaultConfig | color = "#333" } Loading.On)
-                ]
-            ]
-
-        _ ->
-            [ row [ centerY, centerX ] [ statusElement model ]
-            , row [ centerY, centerX ] [ el [ Font.size 30 ] (text (updatedText model)) ]
-            , row [ centerX, paddingEach { top = 0, left = 0, right = 0, bottom = 200 } ]
-                [ column []
-                    [ row [ spacing 20 ] (updateButtons model)
-                    ]
-                ]
-            , row [ centerX ]
-                [ link [ Font.size 20, Font.color (rgb255 0 0 0), Font.underline, Font.center, Font.extraBold ]
-                    { url = "https://github.com/geramirez/mueller-splash-pad"
-                    , label = text "Visit Github Source Code"
-                    }
-                ]
-            ]
-
-
-view : Model -> Browser.Document Msg
-view model =
-    { title = "Mueller Splashpad Status"
-    , body =
-        [ layout
-            [ Background.color (getColorPalette model).primary, Font.color (getColorPalette model).secondary, padding 30 ]
-            (column [ height fill, width fill, spacing 30 ]
-                ([ row [] [ el [ Font.size 50 ] (text "Mueller Splashpad Status") ] ] ++ getContent model)
-            )
-        ]
-    }
-
-
-updateButtons : SpashPadStatus -> List (Element.Element Msg)
-updateButtons model =
-    case model of
-        On _ _ Voted ->
-            []
-
-        Off _ _ Voted ->
-            []
-
-        Unknown _ _ Voted ->
-            []
-
-        _ ->
-            [ buildWorkingButton (getColorPalette model) "on" "Working", buildWorkingButton (getColorPalette model) "off" "Not Working" ]
-
-
-buildWorkingButton : ColorPalette -> String -> String -> Element.Element Msg
-buildWorkingButton colorPalette onPressPayload label =
-    button
-        [ padding 45
-        , Font.size 60
-        , Background.color colorPalette.primary
-        , Border.color colorPalette.secondary
-        , Border.solid
-        , Border.width 3
-        , Border.rounded 10
-        , Border.shadow { blur = 3.0, offset = ( 2.0, 3.0 ), size = 3, color = rgb255 30 30 30 }
-        , Element.focused
-            [ Background.color colorPalette.secondary, Font.color colorPalette.primary ]
-        ]
-        { onPress = Just (SendVote onPressPayload)
-        , label = text label
-        }
-
-
-statusElement : SpashPadStatus -> Element.Element msg
-statusElement model =
-    el [ Font.size 150, Font.center ] (displayText model |> text)
-
-
-displayText : SpashPadStatus -> String
-displayText model =
-    case model of
-        Off _ _ _ ->
-            "Awww :(\nIt's not working"
-
-        On _ _ _ ->
-            "Hurray!\nIt's working"
-
-        Unknown _ _ _ ->
-            "Not Sure..."
-
-        LoadingPage _ _ _ ->
-            ""
-
-
-type alias ColorPalette =
-    { primary : Color
-    , secondary : Color
-    , tertiary : Color
-    }
-
-
-getColorPalette : SpashPadStatus -> ColorPalette
-getColorPalette model =
-    case model of
-        Off _ _ _ ->
-            { primary = rgb255 175 36 30, secondary = rgb255 233 210 153, tertiary = rgb255 43 45 66 }
-
-        On _ _ _ ->
-            { primary = rgb255 191 255 251, secondary = rgb255 0 111 104, tertiary = rgb255 23 26 33 }
-
-        Unknown _ _ _ ->
-            { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
-
-        LoadingPage _ _ _ ->
-            { primary = rgb255 173 173 173, secondary = rgb255 247 247 247, tertiary = rgb255 18 16 14 }
+                Routes.NotFoundRoute ->
+                    ( PageNone, Cmd.none )
+    in
+    ( { model | page = page }, Cmd.batch [ cmd, newCmd ] )
 
 
 subscriptions : Model -> Sub Msg
@@ -282,66 +83,88 @@ subscriptions _ =
     Sub.none
 
 
-getSplashpadStatus =
-    Http.get
-        { url = "/status"
-        , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case ( msg, model.page ) of
+        ( OnUrlRequest urlRequest, _ ) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model
+                    , Nav.pushUrl model.navKey (Url.toString url)
+                    )
+
+                Browser.External url ->
+                    ( model
+                    , Nav.load url
+                    )
+
+        ( OnUrlChange url, _ ) ->
+            let
+                newRoute =
+                    Routes.parseUrl url
+            in
+            ( { model | route = newRoute }, Cmd.none )
+                |> loadCurrentPage
+
+        ( MsgSplashPad subMsg, PageSplashPadStatus pageModel ) ->
+            let
+                ( newPageModel, newCmd ) =
+                    SplashPadStatusPage.update subMsg pageModel
+            in
+            ( { model | page = PageSplashPadStatus newPageModel }
+            , Cmd.map MsgSplashPad newCmd
+            )
+
+        ( MsgAboutPage subMsg, PageAbout pageModel ) ->
+            let
+                ( newPageModel, newCmd ) =
+                    AboutPage.update subMsg pageModel
+            in
+            ( { model | page = PageAbout newPageModel }
+            , Cmd.map MsgAboutPage newCmd
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+main : Program Flags Model Msg
+main =
+    Hash.application
+        -- Using Hash.application allows us to use /#/* style routing to simiplify the backend
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        , onUrlRequest = OnUrlRequest
+        , onUrlChange = OnUrlChange
         }
 
 
-postVotes : String -> Geolocation -> Cmd Msg
-postVotes vote geolocation =
-    let
-        payload =
-            case geolocation of
-                Nothing ->
-                    [ ( "vote", Encode.string vote )
-                    ]
-
-                Just geolocationData ->
-                    [ ( "vote", Encode.string vote )
-                    , ( "location"
-                      , Encode.object
-                            [ ( "latitude", Encode.float geolocationData.coords.latitude )
-                            , ( "longitude", Encode.float geolocationData.coords.longitude )
-                            ]
-                      )
-                    ]
-    in
-    Http.post
-        { url = "/status"
-        , body =
-            Http.jsonBody
-                (Encode.object payload)
-        , expect = Http.expectJson GotStatus splashPadGetResponseDecoder
-        }
-
-
-type alias VoteResponse =
-    { working : Int, not_working : Int }
-
-
-type alias StatusResponseData =
-    { status : String
-    , votes : VoteResponse
-    , updated_at : String
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Splash Pad Status"
+    , body = [ currentPage model ]
     }
 
 
-type alias StatusResponse =
-    Maybe StatusResponseData
+currentPage : Model -> Html Msg
+currentPage model =
+    case model.page of
+        PageSplashPadStatus pageModel ->
+            SplashPadStatusPage.view pageModel
+                |> Html.map MsgSplashPad
+
+        PageAbout pageModel ->
+            AboutPage.view pageModel
+                |> Html.map MsgAboutPage
+
+        _ ->
+            notFoundView
 
 
-splashPadGetResponseDecoder : Json.Decode.Decoder StatusResponseData
-splashPadGetResponseDecoder =
-    map3 StatusResponseData
-        (field "status" string)
-        (field "votes" voteResponseDecoder)
-        (field "updated_at" string)
-
-
-voteResponseDecoder : Json.Decode.Decoder VoteResponse
-voteResponseDecoder =
-    map2 VoteResponse
-        (field "working" int)
-        (field "not_working" int)
+notFoundView : Html msg
+notFoundView =
+    div []
+        [ text "Not found"
+        ]
