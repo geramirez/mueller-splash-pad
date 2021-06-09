@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "nodemonConfig": {
-    "exec": "npm run build_client && npm run start",
+    "exec": "npm run build_client && npm run start -- --inspect",
     "watch": ["./client/src/", "index.js"],
     "ext": "elm,js",
     "ignore": ["./public"]
