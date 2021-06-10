@@ -29,3 +29,10 @@ Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
     npm run startDev
     ```
 
+### Debugging 
+    1. Open `chrome://inspect` in Chrome
+    1. Click `Configure`
+    1. Add  `localhost:9229` and click Done (when node is started with --inspect, a Node.js process listens for a debugging client at port 9229)
+    1. Click `Open dedicated DevTools for Node`
+    1. Add a debugger statement (e.g. add debugger to /status endpoint in index.js)
+    1. Run `npm run startDev` and debug!

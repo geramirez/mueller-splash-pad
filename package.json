@@ -7,10 +7,11 @@
     "startDev": "nodemon",
     "build_client": "cd client &&  elm make src/Main.elm --output=../public/index.js && cd ..",
     "start": "node index.js",
+    "start_inspect": "node --inspect index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "nodemonConfig": {
-    "exec": "npm run build_client && npm run start -- --inspect",
+    "exec": "npm run build_client && npm run start_inspect",
     "watch": ["./client/src/", "index.js"],
     "ext": "elm,js",
     "ignore": ["./public"]
