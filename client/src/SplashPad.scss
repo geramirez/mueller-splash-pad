@@ -1,0 +1,39 @@
+main {
+    height: 100%;
+}
+
+.splash-pad-title {
+    font-size: 4em;
+}
+
+.splash-pad-status {
+    margin-top: 1em;
+    margin-bottom: 1em;
+
+    h1 {
+        font-size: 7em;
+    }
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-pad-details {
+    margin-top: 2em;
+    margin-bottom: 2em;
+    font-size: 1em;
+}
+
+.splash-pad-buttons {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    button {
+        text-align: center;
+        font-size: 2em;
+        padding: 0.4em;
+        margin: 0em 0.5em;
+    }
+}

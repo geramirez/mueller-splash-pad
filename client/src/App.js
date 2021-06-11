@@ -1,18 +1,16 @@
 import './App.scss';
-import { Content, Header, HeaderName } from 'carbon-components-react';
-
+import { Header, HeaderName } from 'carbon-components-react';
+import SplashPad from './SplashPad'
 
 function App() {
   return (
     <>
       <Header aria-label="Mueller Spalsh Pad">
         <HeaderName prefix="" >
-          Mueller Spalsh Pad
+          Austin Splash Pads
         </HeaderName>
       </Header>
-      <Content>
-        <div>Splash Pad</div>
-      </Content>
+      <SplashPad />
     </>
   );
 }
