@@ -2,7 +2,6 @@ const express = require('express')
 const TimeAgo = require('javascript-time-ago')
 const loki = require('lokijs')
 const en =  require('javascript-time-ago/locale/en')
-const path = require('path');
 
 TimeAgo.addDefaultLocale(en)
 
@@ -85,7 +84,7 @@ app.get('/status', (_, res) => {
 
 app.post('/status', (req, res) => {
   const { vote, location } = req.body
-  console.log(req.body,vote, location)
+  console.log(vote, location)
   if (vote === 'on')
     statusRepository.addOnVote(calculateVoteWeight(location))
   else if (vote === 'off')

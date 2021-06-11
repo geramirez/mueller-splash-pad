@@ -2,12 +2,17 @@ import './SplashPad.scss';
 import { Row, Column, Button, Content, Loading } from 'carbon-components-react';
 import React, { useState, useEffect, useCallback } from 'react';
 
-//{"status":"unknown","votes":{"working":0,"not_working":0},"updated_at":"N/A"}
 
 export default function SplashPad() {
 
     const [isLoaded, setIsLoaded] = useState(false);
+    const [hasVoted, setHasVoted] = useState(false);
     const [statusData, setStatusData] = useState({});
+    const [location, setLocation] = useState({})
+
+    const theme = statusData.status === 'working' ? 'working-theme'
+        : statusData.status === 'not working' ? "not-working-theme"
+            : "unknow-theme"
 
     const handleResults = (result) => {
         setStatusData({
@@ -24,27 +29,40 @@ export default function SplashPad() {
     }
 
     useEffect(() => {
-        fetch("/status")
-            .then(res => res.json())
-            .then(handleResults, handleError)
+        const loadStatusData = () => {
+            fetch("/status")
+                .then(res => res.json())
+                .then(handleResults, handleError)
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            ({ coords: { latitude, longitude } }) => {
+                setLocation({ latitude, longitude })
+                loadStatusData()
+            },
+            error => {
+                console.log(error)
+                loadStatusData()
+            },
+            { enableHighAccuracy: true })
     }, [])
-
-
 
     const vote = useCallback(async ({ on }) => {
         setIsLoaded(false)
-        await fetch("/status", {
+        const parameters = {
             method: 'post', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ vote: on ? "on" : "off" })
-        })
+            body: JSON.stringify({ vote: on ? "on" : "off", location })
+        }
+        await fetch("/status", parameters)
             .then(res => res.json())
             .then(handleResults, handleError)
-    }, [])
+            .finally(() => setHasVoted(true))
 
+    }, [location])
 
     if (isLoaded) {
         return (
-            <Content>
+            <Content className={theme}>
                 <Row>
                     <Column className='splash-pad-title'>
                         <div>Mueller Branch Park</div>
@@ -56,19 +74,20 @@ export default function SplashPad() {
                     </Column>
                 </Row>
                 <Row className='splash-pad-details center'>
-                    <Column >
+                    <Column className="splash-pad-detail center">
                         <p>Last Update:</p><p>{statusData.updated_at}</p>
                     </Column>
-                    <Column >
+                    <Column className="splash-pad-detail center">
                         <p>Working: {statusData.votes.working}</p>
                         <p> Not Working: {statusData.votes.not_working}</p>
                     </Column>
                 </Row>
                 <Row>
-                    <Column className='splash-pad-buttons center'>
-                        <Button onClick={() => vote({ on: true })}>Working</Button>
-                        <Button onClick={() => vote({ on: false })}>Not Working</Button>
-                    </Column>
+                    {hasVoted ? <></> :
+                        <Column className='splash-pad-buttons center'>
+                            <Button onClick={() => vote({ on: true })}>Working</Button>
+                            <Button onClick={() => vote({ on: false })}>Not Working</Button>
+                        </Column>}
                 </Row>
             </Content>
         );

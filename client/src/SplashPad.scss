@@ -25,6 +25,9 @@ main {
     margin-top: 3.5em;
     margin-bottom: 3.5em;
     font-size: 1em;
+    .splash-pad-detail {
+        flex-direction: column;
+    }
 }
 
 .splash-pad-buttons {
@@ -36,4 +39,30 @@ main {
         padding: 0.3em;
         margin: 0em 0.4em;
     }
+}
+
+main.working-theme {
+    background: #bffffb;
+    color: #006f68;
+    button {
+        background-color: #bffffb;
+        color: #006f68;
+        border-style: solid;
+        border-color:  #006f68;
+        box-shadow: 1px 1px 1px 1px #1e1e1e
+    }
+}
+main.not-working-theme {
+    background: #af231e;
+    color: #e9d299;
+    button {
+        background-color: #af231e;
+        color: #e9d299;
+        border-style: solid;
+        border-color:  #e9d299;
+        box-shadow: 1px 1px 1px 1px #1e1e1e
+    }
+}
+
+main.unknow-theme .bx--content {
 }
