@@ -85,7 +85,7 @@ app.get('/status', (_, res) => {
 
 app.post('/status', (req, res) => {
   const { vote, location } = req.body
-  console.log(vote, location)
+  console.log(req.body,vote, location)
   if (vote === 'on')
     statusRepository.addOnVote(calculateVoteWeight(location))
   else if (vote === 'off')

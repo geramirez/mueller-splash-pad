@@ -3,15 +3,15 @@ main {
 }
 
 .splash-pad-title {
-    font-size: 4em;
+    font-size: 1.5em;
 }
 
 .splash-pad-status {
-    margin-top: 1em;
-    margin-bottom: 1em;
+    margin-top: 3.5em;
+    margin-bottom: 3.5em;
 
-    h1 {
-        font-size: 7em;
+    div {
+        font-size: 6em;
     }
 }
 
@@ -22,18 +22,18 @@ main {
 }
 
 .splash-pad-details {
-    margin-top: 2em;
-    margin-bottom: 2em;
+    margin-top: 3.5em;
+    margin-bottom: 3.5em;
     font-size: 1em;
 }
 
 .splash-pad-buttons {
-    margin-top: 1em;
-    margin-bottom: 1em;
+    margin-top: 3.5em;
+    margin-bottom: 3.5em;
     button {
         text-align: center;
-        font-size: 2em;
-        padding: 0.4em;
-        margin: 0em 0.5em;
+        font-size: 1.6em;
+        padding: 0.3em;
+        margin: 0em 0.4em;
     }
 }
