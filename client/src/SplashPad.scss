@@ -7,11 +7,11 @@ main {
 }
 
 .splash-pad-status {
-    margin-top: 3.5em;
-    margin-bottom: 3.5em;
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
 
-    div {
-        font-size: 6em;
+    div p {
+        font-size: 4em;
     }
 }
 
@@ -22,8 +22,8 @@ main {
 }
 
 .splash-pad-details {
-    margin-top: 3.5em;
-    margin-bottom: 3.5em;
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
     font-size: 1em;
     .splash-pad-detail {
         flex-direction: column;
@@ -31,8 +31,8 @@ main {
 }
 
 .splash-pad-buttons {
-    margin-top: 3.5em;
-    margin-bottom: 3.5em;
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
     button {
         text-align: center;
         font-size: 1.6em;
@@ -53,13 +53,13 @@ main.working-theme {
     }
 }
 main.not-working-theme {
-    background: #af231e;
-    color: #e9d299;
+    background: #FBA39D;
+    color: #4A2040;
     button {
-        background-color: #af231e;
-        color: #e9d299;
+        background-color: #FBA39D;
+        color: #4A2040;
         border-style: solid;
-        border-color:  #e9d299;
+        border-color:  #4A2040;
         box-shadow: 1px 1px 1px 1px #1e1e1e
     }
 }

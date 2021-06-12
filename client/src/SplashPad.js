@@ -17,9 +17,9 @@ export default function SplashPad({title, key}) {
     const handleResults = (result) => {
         setStatusData({
             ...result,
-            statusText: result.status === 'working' ? "It's working!"
-                : result.status === 'not working' ? "Awww, It's not working!"
-                    : "Not sure"
+            statusText: result.status === 'working' ? <><p>{"Hurray!"}</p><p>{"It's working"}</p></>
+                : result.status === 'not working' ? <><p>{"Awww :'("}</p><p>{"not working"}</p></>
+                    :  <><p>{"Not sure..."}</p><p>{"Let us know"}</p></>
         })
         setIsLoaded(true)
     }
