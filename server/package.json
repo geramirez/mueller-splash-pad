@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "startDev": "nodemon",
-    "build_client": "cd elm-client &&  elm make src/Main.elm --output=../public/index.js && cd ..",
-    "start": "node index.js",
+    "start": "NODE_ENV=production node index.js",
     "start_inspect": "node --inspect index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
