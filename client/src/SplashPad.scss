@@ -1,0 +1,69 @@
+main {
+    height: 100%;
+}
+
+.splash-pad-title {
+    font-size: 1.5em;
+}
+
+.splash-pad-status {
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
+
+    div p {
+        font-size: 4em;
+    }
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-pad-details {
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
+    font-size: 1em;
+    .splash-pad-detail {
+        flex-direction: column;
+    }
+}
+
+.splash-pad-buttons {
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
+    button {
+        text-align: center;
+        font-size: 1.6em;
+        padding: 0.3em;
+        margin: 0em 0.4em;
+    }
+}
+
+main.working-theme {
+    background: #bffffb;
+    color: #006f68;
+    button {
+        background-color: #bffffb;
+        color: #006f68;
+        border-style: solid;
+        border-color:  #006f68;
+        box-shadow: 1px 1px 1px 1px #1e1e1e
+    }
+}
+main.not-working-theme {
+    background: #FBA39D;
+    color: #4A2040;
+    button {
+        background-color: #FBA39D;
+        color: #4A2040;
+        border-style: solid;
+        border-color:  #4A2040;
+        box-shadow: 1px 1px 1px 1px #1e1e1e
+    }
+}
+
+.contribute {
+    margin-top: 1.5em;
+}

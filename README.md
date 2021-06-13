@@ -19,13 +19,18 @@ Visit Elm Install Page https://guide.elm-lang.org/install/elm.html
 
 Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
 
-### Install Node dependencies
+### Start Client
     ```bash
+    cd client
+    cp .env.example .env
     npm i
+    npm run start
     ```
 
-### Run build Elm app and start backend
+### Start Server
     ```bash
+    cd server
+    npm i
     npm run startDev
     ```
 

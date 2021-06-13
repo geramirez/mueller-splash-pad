@@ -1,17 +1,15 @@
 const express = require('express')
 const TimeAgo = require('javascript-time-ago')
 const loki = require('lokijs')
-const en =  require('javascript-time-ago/locale/en')
+const en = require('javascript-time-ago/locale/en')
+const path = require('path')
 
 TimeAgo.addDefaultLocale(en)
 
 const timeAgo = new TimeAgo('en-US')
 const app = express()
 app.use(express.json());
-const PORT = process.env.PORT || 3000
-
-app.use(express.static('public'));
-
+const PORT = process.env.PORT || 5000
 
 const db = new loki('local.db');
 
@@ -72,7 +70,7 @@ const calculateVoteWeight = (location) => {
   if (location === undefined)
     return 1
   if (arePointsNear(location, branchParkLocation, .2))
-  return 2
+    return 2
   return 1
 }
 
@@ -96,6 +94,15 @@ app.post('/status', (req, res) => {
   res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime() })
 })
 
+if (process.env.NODE_ENV === 'production') {
+
+  app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+
+  app.get('*', function (_, res) {
+    res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+  });
+  
+}
 
 app.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`)
