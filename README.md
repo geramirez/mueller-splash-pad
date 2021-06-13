@@ -11,13 +11,14 @@ Ideally this would linked to the physical switch, but this might work for now. R
 
 ## Running Locally 
 
-### Install Elm 
-
-Visit Elm Install Page https://guide.elm-lang.org/install/elm.html
-
 ### Install Node 
 
 Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
+
+### Install Docker
+
+Install Docker: https://docs.docker.com/install/
+Install Docker-Compose: https://docs.docker.com/compose/install/
 
 ### Start Client
     ```bash
@@ -34,6 +35,10 @@ Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
     npm run startDev
     ```
 
+### Start Database
+    ```bash
+    docker-compose up -d
+    ```
 ### Debugging 
     1. Open `chrome://inspect` in Chrome
     1. Click `Configure`

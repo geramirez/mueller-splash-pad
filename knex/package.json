@@ -1,0 +1,16 @@
+{
+  "name": "@mueller-splash-pad/knex",
+  "version": "1.0.0",
+  "description": "knex client, configuration and migrations",
+  "main": "knex.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "knex": "^0.95.6",
+    "pg": "^8.6.0"
+  }
+}
