@@ -1,9 +1,9 @@
 import './SplashPad.scss';
-import { Row, Column, Button, Content, Loading } from 'carbon-components-react';
+import { Row, Column, Button, Content, Loading, Link } from 'carbon-components-react';
 import React, { useState, useEffect, useCallback } from 'react';
 
 
-export default function SplashPad({title, key}) {
+export default function SplashPad({ title, key }) {
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasVoted, setHasVoted] = useState(false);
@@ -19,7 +19,7 @@ export default function SplashPad({title, key}) {
             ...result,
             statusText: result.status === 'working' ? <><p>{"Hurray!"}</p><p>{"It's working"}</p></>
                 : result.status === 'not working' ? <><p>{"Awww :'("}</p><p>{"not working"}</p></>
-                    :  <><p>{"Not sure..."}</p><p>{"Let us know"}</p></>
+                    : <><p>{"Not sure..."}</p><p>{"Let us know"}</p></>
         })
         setIsLoaded(true)
     }
@@ -89,12 +89,11 @@ export default function SplashPad({title, key}) {
                             <Button onClick={() => vote({ on: false })}>Not Working</Button>
                         </Column>}
                 </Row>
+                <div className="contribute center">Contribute on&nbsp;<Link href="https://github.com/geramirez/mueller-splash-pad/">Github</Link></div>
             </Content>
         );
     } else {
         return <Loading></Loading>
     }
-
-
 
 }

@@ -18,11 +18,11 @@ function App() {
   return (
     <>
       <Router>
-      <Header aria-label="Mueller Spalsh Pad">
-        <HeaderName prefix="" >
-          Austin Splash Pads
+        <Header aria-label="Mueller Spalsh Pad">
+          <HeaderName prefix="" >
+            Austin Splash Pads
         </HeaderName>
-      </Header>
+        </Header>
         <Switch>
           <Route path="/about">
             <About />
