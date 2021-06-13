@@ -3,6 +3,7 @@ const TimeAgo = require('javascript-time-ago')
 const loki = require('lokijs')
 const en = require('javascript-time-ago/locale/en')
 const path = require('path')
+const knex = require("@mueller-splash-pad/knex");
 
 TimeAgo.addDefaultLocale(en)
 
@@ -102,6 +103,19 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
   });
   
+}
+
+if (process.env.NODE_ENV === "development") {
+  app.get("/db_status", async (req, res) => {
+    const results = await knex
+      .select()
+      .from("pg_roles")
+      .then((data) => {
+        return data;
+      });
+
+    res.send(results);
+  });
 }
 
 app.listen(PORT, () => {

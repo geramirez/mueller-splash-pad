@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "startDev": "nodemon",
+    "startDev": "NODE_ENV=development nodemon",
     "start": "NODE_ENV=production node index.js",
     "start_inspect": "node --inspect index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@mueller-splash-pad/knex": "file:../knex",
     "express": "^4.17.1",
     "javascript-time-ago": "^2.3.6",
     "lokijs": "^1.5.12"
