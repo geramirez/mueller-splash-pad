@@ -9,9 +9,9 @@ import {
 } from "react-router-dom";
 
 const splashPads = [
-  { path: '/bartholomew', title: 'Bartholomew Splashpad', key: 'bartholomew' },
-  { path: '/mueller-branch-park', title: 'Mueller Branch Park', key: 'mueller-branch-park' },
-  { path: '/', title: 'Mueller Branch Park', key: 'mueller-branch-park' },
+  { path: '/bartholomew', title: 'Bartholomew Splashpad', parkKey: 'bartholomew' },
+  { path: '/mueller-branch-park', title: 'Mueller Branch Park', parkKey: 'mueller-branch-park' },
+  { path: '/', title: 'Mueller Branch Park', parkKey: 'mueller-branch-park' },
 ]
 
 function App() {
@@ -27,9 +27,9 @@ function App() {
           <Route path="/about">
             <About />
           </Route>
-          {splashPads.map(({ path, title, key }) => (
+          {splashPads.map(({ path, title, parkKey }, idx) => (
             <Route path={path}>
-              <SplashPad title={title} key={key} />
+              <SplashPad title={title} parkKey={parkKey} key={`${idx}-${parkKey}`} />
             </Route>
           ))
           }
