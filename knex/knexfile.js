@@ -15,7 +15,7 @@ module.exports = {
     },
     migrations,
   },
-  prd: {
+  production: {
     client,
     connection: process.env.DATABASE_URL,
     migrations,
