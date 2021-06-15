@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000
 
 const db = new loki('local.db');
 
-const sixHoursAgo = () => (new Date) - 60 * 60 * 1000 * 6
+const oneHourAgo = () => (new Date) - 60 * 60 * 1000
 
 const getParkLocation = (key) => (
   {
@@ -41,7 +41,7 @@ class StatusRepository {
 
   getLastVoteTime(parkKey) {
     const voteDates = this.votes
-      .find({ timestamp: { $gte: sixHoursAgo() }, parkKey })
+      .find({ timestamp: { $gte: oneHourAgo() }, parkKey })
       .map(v => v.timestamp)
 
     if (voteDates.length > 0)
@@ -51,9 +51,18 @@ class StatusRepository {
   }
 
   getStatus(parkKey) {
-    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: sixHoursAgo() }, parkKey })
-    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: sixHoursAgo() }, parkKey })
-    this.votes.findAndRemove({ timestamp: { $lt: sixHoursAgo() } })
+    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: oneHourAgo() }, parkKey })
+    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: oneHourAgo() }, parkKey })
+
+    if (workingVotes === 0 && notWorkingVotes === 0) {
+      const orderedVotes = this.votes.chain().simplesort('timestamp', { desc: true }).data()
+      if (orderedVotes.length === 0 || orderedVotes[0].status === false) {
+        return { status: "unknown", workingVotes, notWorkingVotes }
+      } else {
+        return { status: "working", workingVotes, notWorkingVotes }
+      }
+    }
+
     if (workingVotes === notWorkingVotes) {
       return { status: "unknown", workingVotes, notWorkingVotes }
     } else if (workingVotes > notWorkingVotes) {

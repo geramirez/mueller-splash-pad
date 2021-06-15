@@ -28,7 +28,7 @@ function App() {
             <About />
           </Route>
           {splashPads.map(({ path, title, parkKey }, idx) => (
-            <Route path={path}>
+            <Route path={path} key={`${idx}-${parkKey}`}>
               <SplashPad title={title} parkKey={parkKey} key={`${idx}-${parkKey}`} />
             </Route>
           ))
