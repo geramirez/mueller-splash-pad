@@ -18,8 +18,15 @@ const oneHourAgo = () => (new Date) - 60 * 60 * 1000
 
 const getParkLocation = (key) => (
   {
-    'mueller-branch-park': { latitude: 30.300190, longitude: -97.702812 },
     'bartholomew': { latitude: 30.305177, longitude: -97.697469 },
+    'chestnut': { latitude: 30.277067251010195, longitude: -97.71699243984315 },
+    'eastwoods': { latitude: 30.290943, longitude: -97.731715 },
+    'liz-carpenter': { latitude: 30.26211031582992, longitude: -97.75441430399374 },
+    'lott': { latitude: 30.271041206071896, longitude: -97.7297671152558 },
+    'metz': { latitude: 30.252258120681006, longitude: -97.71810034083994 },
+    'mueller-branch-park': { latitude: 30.300190, longitude: -97.702812 },
+    'ricky-guerrero': { latitude: 30.247392178325605, longitude: -97.76433234845857 },
+    'rosewood': { latitude:  30.27109617907063, longitude: -97.71390894361079 },
   }[key]
 )
 
