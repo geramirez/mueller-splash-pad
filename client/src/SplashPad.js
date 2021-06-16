@@ -3,7 +3,7 @@ import { Row, Column, Button, Content, Loading, Link } from 'carbon-components-r
 import React, { useState, useEffect, useCallback } from 'react';
 
 
-export default function SplashPad({ title, key }) {
+export default function SplashPad({ title, parkKey }) {
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasVoted, setHasVoted] = useState(false);
@@ -30,7 +30,7 @@ export default function SplashPad({ title, key }) {
 
     useEffect(() => {
         const loadStatusData = () => {
-            fetch(`/status?splashPad=${key}`)
+            fetch(`/status/${parkKey}`)
                 .then(res => res.json())
                 .then(handleResults, handleError)
         }
@@ -45,20 +45,20 @@ export default function SplashPad({ title, key }) {
                 loadStatusData()
             },
             { enableHighAccuracy: true })
-    }, [key])
+    }, [parkKey])
 
     const vote = useCallback(async ({ on }) => {
         setIsLoaded(false)
         const parameters = {
             method: 'post', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ vote: on ? "on" : "off", location, key })
+            body: JSON.stringify({ vote: on ? "on" : "off", location })
         }
-        await fetch("/status", parameters)
+        await fetch(`/status/${parkKey}`, parameters)
             .then(res => res.json())
             .then(handleResults, handleError)
             .finally(() => setHasVoted(true))
 
-    }, [location, key])
+    }, [location, parkKey])
 
     if (isLoaded) {
         return (

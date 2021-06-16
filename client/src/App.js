@@ -1,38 +1,83 @@
 import './App.scss';
-import { Header, HeaderName } from 'carbon-components-react';
+import { Header, HeaderName, SideNavLink, SideNav, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
 import SplashPad from './SplashPad'
 import About from './About'
 import {
   BrowserRouter as Router,
   Switch,
   Route,
+  useLocation
 } from "react-router-dom";
 
+
 const splashPads = [
-  { path: '/bartholomew', title: 'Bartholomew Splashpad', key: 'bartholomew' },
-  { path: '/mueller-branch-park', title: 'Mueller Branch Park', key: 'mueller-branch-park' },
-  { path: '/', title: 'Mueller Branch Park', key: 'mueller-branch-park' },
+  { path: '/bartholomew', title: 'Bartholomew Park Splashpad', parkKey: 'bartholomew' },
+  { path: '/chestnut', title: 'Chestnut', parkKey: 'chestnut' },
+  { path: '/eastwoods', title: 'Eastwoods', parkKey: 'eastwoods' },
+  { path: '/liz-carpenter', title: 'Liz Carpenter Park', parkKey: 'liz-carpenter' },
+  { path: '/lott', title: 'Lott', parkKey: 'lott' },
+  { path: '/metz', title: 'Metz', parkKey: 'metz' },
+  { path: '/mueller-branch-park', title: 'Mary Elizabeth Branch Park', parkKey: 'mueller-branch-park' },
+  { path: '/ricky-guerrero', title: 'Ricky Guerrero Park', parkKey: 'ricky-guerrero' },
+  { path: '/rosewood', title: 'Rosewood Park', parkKey: 'rosewood' },
 ]
 
+function AppHeader() {
+
+  const location = useLocation();
+  const currentSplashPad = splashPads.find(pad => pad.path === location.pathname) || splashPads.find(pad => pad.path === '/mueller-branch-park')
+
+  return (<HeaderContainer
+    render={({ isSideNavExpanded, onClickSideNavExpand }) => (
+      <Header aria-label="Mueller Spalsh Pad">
+        <SkipToContent />
+        <HeaderMenuButton
+          aria-label="Open menu"
+          onClick={onClickSideNavExpand}
+          isActive={isSideNavExpanded}
+        />
+        <HeaderName prefix="" >
+          Austin Splash Pads
+      </HeaderName>
+        <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
+          <SideNavItems>
+
+
+            {splashPads.map(({ path, title, parkKey }, idx) => (
+              <SideNavLink href={path} key={`${idx}-${parkKey}`}>
+                {title}
+              </SideNavLink>
+            ))}
+
+          </SideNavItems>
+        </SideNav>
+      </Header>
+    )}
+  />)
+
+}
+
+
+
 function App() {
+
   return (
     <>
       <Router>
-        <Header aria-label="Mueller Spalsh Pad">
-          <HeaderName prefix="" >
-            Austin Splash Pads
-        </HeaderName>
-        </Header>
+        <AppHeader />
         <Switch>
           <Route path="/about">
             <About />
           </Route>
-          {splashPads.map(({ path, title, key }) => (
-            <Route path={path}>
-              <SplashPad title={title} key={key} />
+          {splashPads.map(({ path, title, parkKey }, idx) => (
+            <Route path={path} key={`${idx}-${parkKey}`}>
+              <SplashPad title={title} parkKey={parkKey} key={`${idx}-${parkKey}`} />
             </Route>
           ))
           }
+          <Route path="/">
+            <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" />
+          </Route>
         </Switch>
       </Router>
     </>
