@@ -29,7 +29,7 @@ function AppHeader() {
 
   return (<HeaderContainer
     render={({ isSideNavExpanded, onClickSideNavExpand }) => (
-      <Header aria-label="Mueller Spalsh Pad">
+      <Header aria-label="Austin Splash Pads">
         <SkipToContent />
         <HeaderMenuButton
           aria-label="Open menu"
@@ -37,18 +37,15 @@ function AppHeader() {
           isActive={isSideNavExpanded}
         />
         <HeaderName prefix="" >
-          Austin Splash Pads
+          Austin Splash Pads - {currentSplashPad.title}
       </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
           <SideNavItems>
-
-
             {splashPads.map(({ path, title, parkKey }, idx) => (
               <SideNavLink href={path} key={`${idx}-${parkKey}`}>
                 {title}
               </SideNavLink>
             ))}
-
           </SideNavItems>
         </SideNav>
       </Header>
