@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000
 
 const db = new loki('local.db');
 
-const oneHourAgo = () => (new Date) - 60 * 60 * 1000
+const twentyFourHoursAgo = () => (new Date) - 60 * 60 * 1000 * 24
 
 const getParkLocation = (key) => (
   {
@@ -26,7 +26,7 @@ const getParkLocation = (key) => (
     'metz': { latitude: 30.252258120681006, longitude: -97.71810034083994 },
     'mueller-branch-park': { latitude: 30.300190, longitude: -97.702812 },
     'ricky-guerrero': { latitude: 30.247392178325605, longitude: -97.76433234845857 },
-    'rosewood': { latitude:  30.27109617907063, longitude: -97.71390894361079 },
+    'rosewood': { latitude: 30.27109617907063, longitude: -97.71390894361079 },
   }[key]
 )
 
@@ -48,7 +48,7 @@ class StatusRepository {
 
   getLastVoteTime(parkKey) {
     const voteDates = this.votes
-      .find({ timestamp: { $gte: oneHourAgo() }, parkKey })
+      .find({ timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
       .map(v => v.timestamp)
 
     if (voteDates.length > 0)
@@ -58,11 +58,11 @@ class StatusRepository {
   }
 
   getStatus(parkKey) {
-    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: oneHourAgo() }, parkKey })
-    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: oneHourAgo() }, parkKey })
+    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
+    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
 
     if (workingVotes === 0 && notWorkingVotes === 0) {
-      const orderedVotes = this.votes.chain().simplesort('timestamp', { desc: true }).data()
+      const orderedVotes = this.votes.chain().find({ parkKey }).simplesort('timestamp', { desc: true }).data()
       if (orderedVotes.length === 0 || orderedVotes[0].status === false) {
         return { status: "unknown", workingVotes, notWorkingVotes }
       } else {
@@ -111,11 +111,13 @@ app.post('/status/:parkKey', (req, res) => {
   const { vote, location } = req.body
   const parkKey = req.params.parkKey
   console.log(vote, location, parkKey)
-  const parkLocation = getParkLocation(parkKey)
-  if (vote === 'on')
-    statusRepository.addOnVote(calculateVoteWeight(parkLocation, location), parkKey)
-  else if (vote === 'off')
-    statusRepository.addOffVote(calculateVoteWeight(parkLocation, location), parkKey)
+  if (location) {
+    const parkLocation = getParkLocation(parkKey)
+    if (vote === 'on')
+      statusRepository.addOnVote(calculateVoteWeight(parkLocation, location), parkKey)
+    else if (vote === 'off')
+      statusRepository.addOffVote(calculateVoteWeight(parkLocation, location), parkKey)
+  }
   const { status, workingVotes, notWorkingVotes } = statusRepository.getStatus(parkKey)
   res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(parkKey) })
 })

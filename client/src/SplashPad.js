@@ -83,7 +83,7 @@ export default function SplashPad({ title, parkKey }) {
                     </Column>
                 </Row>
                 <Row>
-                    {hasVoted ? <></> :
+                    {hasVoted || !location.latitude ? <></> :
                         <Column className='splash-pad-buttons center'>
                             <Button onClick={() => vote({ on: true })}>Working</Button>
                             <Button onClick={() => vote({ on: false })}>Not Working</Button>
