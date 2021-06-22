@@ -38,7 +38,7 @@ function AppHeader() {
         />
         <HeaderName prefix="" >
           Austin Splash Pads - {currentSplashPad.title}
-      </HeaderName>
+        </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
           <SideNavItems>
             {splashPads.map(({ path, title, parkKey }, idx) => (
@@ -46,6 +46,9 @@ function AppHeader() {
                 {title}
               </SideNavLink>
             ))}
+              <SideNavLink href="/about">
+                About
+              </SideNavLink>
           </SideNavItems>
         </SideNav>
       </Header>
