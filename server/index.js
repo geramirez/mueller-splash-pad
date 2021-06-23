@@ -31,22 +31,77 @@ const getParkLocation = (key) => (
 )
 
 
-class StatusRepository {
+
+class DBStatusRepository {
+
+  async addOnVote(weight, parkName) {
+    const park_id = (await knex.select('id').from('parks').where({ name: parkName }).first()).id
+    for (var i = 0; i < weight; i++)
+      await knex('votes').insert({ status: true, park_id })
+  }
+
+  async addOffVote(weight, parkName) {
+    const park_id = (await knex.select('id').from('parks').where({ name: parkName }).first()).id
+    for (var i = 0; i < weight; i++)
+      await knex('votes').insert({ status: false, park_id })
+  }
+
+  async getLastVoteTime(parkName) {
+
+    const park_id = (await knex.select('id').from('parks').where({ name: parkName }).first()).id
+    const lastVoteRecord = await knex
+      .select('created_at')
+      .where({ park_id })
+      .where('created_at', '>=', new Date(twentyFourHoursAgo()))
+      .from('votes')
+      .orderBy('created_at', 'desc')
+      .first()
+
+    return lastVoteRecord ? timeAgo.format(lastVoteRecord.created_at) : 'N/A'
+  }
+
+  async getStatus(parkKey) {
+    return { status: "unknown", workingVotes: 0, notWorkingVotes: 0 }
+
+    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
+    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
+
+    if (workingVotes === 0 && notWorkingVotes === 0) {
+      const orderedVotes = this.votes.chain().find({ parkKey }).simplesort('timestamp', { desc: true }).data()
+      if (orderedVotes.length === 0 || orderedVotes[0].status === false) {
+        return { status: "unknown", workingVotes, notWorkingVotes }
+      } else {
+        return { status: "working", workingVotes, notWorkingVotes }
+      }
+    }
+
+    if (workingVotes === notWorkingVotes) {
+      return { status: "unknown", workingVotes, notWorkingVotes }
+    } else if (workingVotes > notWorkingVotes) {
+      return { status: "working", workingVotes, notWorkingVotes }
+    } else {
+      return { status: "not working", workingVotes, notWorkingVotes }
+    }
+  }
+}
+
+
+class InMemoryStatusRepository {
   constructor() {
     this.votes = db.addCollection('votes');
   }
 
-  addOnVote(weight, parkKey) {
+  async addOnVote(weight, parkKey) {
     for (var i = 0; i < weight; i++)
       this.votes.insertOne({ status: true, timestamp: new Date(), parkKey })
   }
 
-  addOffVote(weight, parkKey) {
+  async addOffVote(weight, parkKey) {
     for (var i = 0; i < weight; i++)
       this.votes.insertOne({ status: false, timestamp: new Date(), parkKey })
   }
 
-  getLastVoteTime(parkKey) {
+  async getLastVoteTime(parkKey) {
     const voteDates = this.votes
       .find({ timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
       .map(v => v.timestamp)
@@ -57,7 +112,7 @@ class StatusRepository {
     return 'N/A'
   }
 
-  getStatus(parkKey) {
+  async getStatus(parkKey) {
     const workingVotes = this.votes.count({ status: true, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
     const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
 
@@ -98,28 +153,28 @@ const calculateVoteWeight = (parkLocation, location) => {
 }
 
 
-const statusRepository = new StatusRepository()
+const statusRepository = new DBStatusRepository()
 
-app.get('/status/:parkKey', (req, res) => {
+app.get('/status/:parkKey', async (req, res) => {
   const parkKey = req.params.parkKey
-  const { status, workingVotes, notWorkingVotes } = statusRepository.getStatus(parkKey)
-  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(parkKey) })
+  const { status, workingVotes, notWorkingVotes } = await statusRepository.getStatus(parkKey)
+  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: await statusRepository.getLastVoteTime(parkKey) })
 })
 
 
-app.post('/status/:parkKey', (req, res) => {
+app.post('/status/:parkKey', async (req, res) => {
   const { vote, location } = req.body
   const parkKey = req.params.parkKey
   console.log(vote, location, parkKey)
   if (location) {
-    const parkLocation = getParkLocation(parkKey)
+    const parkLocation = await getParkLocation(parkKey)
     if (vote === 'on')
-      statusRepository.addOnVote(calculateVoteWeight(parkLocation, location), parkKey)
+      await statusRepository.addOnVote(calculateVoteWeight(parkLocation, location), parkKey)
     else if (vote === 'off')
-      statusRepository.addOffVote(calculateVoteWeight(parkLocation, location), parkKey)
+      await statusRepository.addOffVote(calculateVoteWeight(parkLocation, location), parkKey)
   }
-  const { status, workingVotes, notWorkingVotes } = statusRepository.getStatus(parkKey)
-  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: statusRepository.getLastVoteTime(parkKey) })
+  const { status, workingVotes, notWorkingVotes } = await statusRepository.getStatus(parkKey)
+  res.json({ status, votes: { working: workingVotes, not_working: notWorkingVotes }, updated_at: await statusRepository.getLastVoteTime(parkKey) })
 })
 
 if (process.env.NODE_ENV === 'production') {
