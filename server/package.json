@@ -18,7 +18,8 @@
     "@mueller-splash-pad/knex": "file:../knex",
     "express": "^4.17.1",
     "javascript-time-ago": "^2.3.6",
-    "lokijs": "^1.5.12"
+    "lokijs": "^1.5.12",
+    "ramda": "^0.27.1"
   },
   "engines": {
     "node": "14.x"

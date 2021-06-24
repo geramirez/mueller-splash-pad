@@ -4,6 +4,7 @@ const loki = require('lokijs')
 const en = require('javascript-time-ago/locale/en')
 const path = require('path')
 const knex = require("@mueller-splash-pad/knex");
+const R = require('ramda')
 
 TimeAgo.addDefaultLocale(en)
 
@@ -16,32 +17,25 @@ const db = new loki('local.db');
 
 const twentyFourHoursAgo = () => (new Date) - 60 * 60 * 1000 * 24
 
-const getParkLocation = (key) => (
-  {
-    'bartholomew': { latitude: 30.305177, longitude: -97.697469 },
-    'chestnut': { latitude: 30.277067251010195, longitude: -97.71699243984315 },
-    'eastwoods': { latitude: 30.290943, longitude: -97.731715 },
-    'liz-carpenter': { latitude: 30.26211031582992, longitude: -97.75441430399374 },
-    'lott': { latitude: 30.271041206071896, longitude: -97.7297671152558 },
-    'metz': { latitude: 30.252258120681006, longitude: -97.71810034083994 },
-    'mueller-branch-park': { latitude: 30.300190, longitude: -97.702812 },
-    'ricky-guerrero': { latitude: 30.247392178325605, longitude: -97.76433234845857 },
-    'rosewood': { latitude: 30.27109617907063, longitude: -97.71390894361079 },
-  }[key]
+const getParkLocation = R.memoizeWith(
+  R.identity,
+  async (parkName) => await knex.select('latitude', 'longitude').from('parks').where({ name: parkName }).first()
 )
-
-
 
 class DBStatusRepository {
 
+  constructor() {
+    this.getParkId = R.memoizeWith(R.identity, async parkName => (await knex.select('id').from('parks').where({ name: parkName }).first()).id)
+  }
+
   async addOnVote(weight, parkName) {
-    const park_id = (await knex.select('id').from('parks').where({ name: parkName }).first()).id
+    const park_id = await this.getParkId(parkName)
     for (var i = 0; i < weight; i++)
       await knex('votes').insert({ status: true, park_id })
   }
 
   async addOffVote(weight, parkName) {
-    const park_id = (await knex.select('id').from('parks').where({ name: parkName }).first()).id
+    const park_id = await this.getParkId(parkName)
     for (var i = 0; i < weight; i++)
       await knex('votes').insert({ status: false, park_id })
   }
@@ -60,20 +54,36 @@ class DBStatusRepository {
     return lastVoteRecord ? timeAgo.format(lastVoteRecord.created_at) : 'N/A'
   }
 
-  async getStatus(parkKey) {
-    return { status: "unknown", workingVotes: 0, notWorkingVotes: 0 }
+  async getStatus(parkName) {
+    const park_id = await this.getParkId(parkName)
+    const lastVoteRecords = await knex
+      .count('status')
+      .select('status')
+      .where({ park_id })
+      .where('created_at', '>=', new Date(twentyFourHoursAgo()))
+      .from('votes')
+      .groupBy('status')
 
-    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
-    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
-
-    if (workingVotes === 0 && notWorkingVotes === 0) {
-      const orderedVotes = this.votes.chain().find({ parkKey }).simplesort('timestamp', { desc: true }).data()
-      if (orderedVotes.length === 0 || orderedVotes[0].status === false) {
-        return { status: "unknown", workingVotes, notWorkingVotes }
+    if (!lastVoteRecords) {
+      const lastVoteRecord = await knex
+        .select('status')
+        .where({ park_id })
+        .from('votes')
+        .orderBy('created_at', 'desc')
+        .first()
+      if (lastVoteRecord && lastVoteRecord.status) {
+        return { status: "working", workingVotes: 0, notWorkingVotes: 0 }
       } else {
-        return { status: "working", workingVotes, notWorkingVotes }
+        return { status: "unknown", workingVotes: 0, notWorkingVotes: 0 }
       }
     }
+
+    const { workingVotes, notWorkingVotes } = lastVoteRecords.reduce((acc, record) => {
+      return record.status ?
+        { ...acc, workingVotes: parseInt(record.count) } :
+        { ...acc, notWorkingVotes: parseInt(record.count) }
+    }, { workingVotes: 0, notWorkingVotes: 0 })
+
 
     if (workingVotes === notWorkingVotes) {
       return { status: "unknown", workingVotes, notWorkingVotes }
@@ -83,56 +93,7 @@ class DBStatusRepository {
       return { status: "not working", workingVotes, notWorkingVotes }
     }
   }
-}
 
-
-class InMemoryStatusRepository {
-  constructor() {
-    this.votes = db.addCollection('votes');
-  }
-
-  async addOnVote(weight, parkKey) {
-    for (var i = 0; i < weight; i++)
-      this.votes.insertOne({ status: true, timestamp: new Date(), parkKey })
-  }
-
-  async addOffVote(weight, parkKey) {
-    for (var i = 0; i < weight; i++)
-      this.votes.insertOne({ status: false, timestamp: new Date(), parkKey })
-  }
-
-  async getLastVoteTime(parkKey) {
-    const voteDates = this.votes
-      .find({ timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
-      .map(v => v.timestamp)
-
-    if (voteDates.length > 0)
-      return timeAgo.format(voteDates.reduce(function (a, b) { return a > b ? a : b; }))
-
-    return 'N/A'
-  }
-
-  async getStatus(parkKey) {
-    const workingVotes = this.votes.count({ status: true, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
-    const notWorkingVotes = this.votes.count({ status: false, timestamp: { $gte: twentyFourHoursAgo() }, parkKey })
-
-    if (workingVotes === 0 && notWorkingVotes === 0) {
-      const orderedVotes = this.votes.chain().find({ parkKey }).simplesort('timestamp', { desc: true }).data()
-      if (orderedVotes.length === 0 || orderedVotes[0].status === false) {
-        return { status: "unknown", workingVotes, notWorkingVotes }
-      } else {
-        return { status: "working", workingVotes, notWorkingVotes }
-      }
-    }
-
-    if (workingVotes === notWorkingVotes) {
-      return { status: "unknown", workingVotes, notWorkingVotes }
-    } else if (workingVotes > notWorkingVotes) {
-      return { status: "working", workingVotes, notWorkingVotes }
-    } else {
-      return { status: "not working", workingVotes, notWorkingVotes }
-    }
-  }
 }
 
 function arePointsNear(checkPoint, centerPoint, km) {
