@@ -1,5 +1,5 @@
 import './App.scss';
-import { Header, HeaderName, SideNavLink, SideNav, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
+import { Header, HeaderName, SideNavLink, SideNav, Content, Row, ClickableTile, Column, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
 import SplashPad from './SplashPad'
 import About from './About'
 import {
@@ -23,9 +23,18 @@ const splashPads = [
 ]
 
 function AppHeader() {
-
+  
   const location = useLocation();
-  const currentSplashPad = splashPads.find(pad => pad.path === location.pathname) || splashPads.find(pad => pad.path === '/mueller-branch-park')
+  const getHeaderTitle = () => {
+    if (window.location.hostname === 'muellersplashpad' && location.pathname === '/')
+      return `Austin Splash Pads - Mary Elizabeth Branch Park`
+    else if (window.location.hostname !== 'muellersplashpad' && location.pathname === '/')
+      return "Austin Splash Pads"
+    else
+      return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
+
+  }
+
 
   return (<HeaderContainer
     render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -37,8 +46,8 @@ function AppHeader() {
           isActive={isSideNavExpanded}
         />
         <HeaderName prefix="" >
-          Austin Splash Pads - {currentSplashPad.title}
-      </HeaderName>
+          {getHeaderTitle()}
+        </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
           <SideNavItems>
             {splashPads.map(({ path, title, parkKey }, idx) => (
@@ -54,9 +63,23 @@ function AppHeader() {
 
 }
 
+function AllSplashPads() {
 
+  return (<Content>
+    <Row>
+      <Column >
+        {splashPads.map(({ path, title, parkKey }, idx) => (
+          <ClickableTile className="tile" key={`${idx}-${parkKey}`} href={path} >{title}</ClickableTile>
+        ))}
+      </Column>
+    </Row>
+  </Content>)
+}
 
 function App() {
+  const HomePage = window.location.hostname === 'muellersplashpad' ?
+    <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" /> :
+    < AllSplashPads />
 
   return (
     <>
@@ -73,7 +96,7 @@ function App() {
           ))
           }
           <Route path="/">
-            <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" />
+            {HomePage}
           </Route>
         </Switch>
       </Router>
