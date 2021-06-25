@@ -1,6 +1,5 @@
 const express = require('express')
 const TimeAgo = require('javascript-time-ago')
-const loki = require('lokijs')
 const en = require('javascript-time-ago/locale/en')
 const path = require('path')
 const knex = require("@mueller-splash-pad/knex");
@@ -13,7 +12,6 @@ const app = express()
 app.use(express.json());
 const PORT = process.env.PORT || 5000
 
-const db = new loki('local.db');
 
 const twentyFourHoursAgo = () => (new Date) - 60 * 60 * 1000 * 24
 
