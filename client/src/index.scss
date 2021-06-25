@@ -1,2 +1,8 @@
 @import 'carbon-components/scss/globals/scss/styles.scss';
 
+.bx--side-nav--ux {
+    width: 0px;
+}
+nav.bx--side-nav--expanded.bx--side-nav--ux {
+    width: 16rem;
+}

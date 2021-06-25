@@ -45,7 +45,7 @@ function AppHeader() {
           onClick={onClickSideNavExpand}
           isActive={isSideNavExpanded}
         />
-        <HeaderName prefix="" >
+        <HeaderName  href="/" prefix="" >
           {getHeaderTitle()}
         </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
