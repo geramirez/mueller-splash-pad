@@ -1,5 +1,5 @@
 import './App.scss';
-import { Header, HeaderName, SideNavLink, SideNav, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
+import { Header, HeaderName, SideNavLink, SideNav, Content, Row, ClickableTile, Column, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
 import SplashPad from './SplashPad'
 import About from './About'
 import {
@@ -45,9 +45,9 @@ function AppHeader() {
           onClick={onClickSideNavExpand}
           isActive={isSideNavExpanded}
         />
-        <HeaderName prefix="" >
+        <HeaderName  href="/" prefix="" >
           {getHeaderTitle()}
-      </HeaderName>
+        </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
           <SideNavItems>
             {splashPads.map(({ path, title, parkKey }, idx) => (
@@ -63,9 +63,23 @@ function AppHeader() {
 
 }
 
+function AllSplashPads() {
 
+  return (<Content>
+    <Row>
+      <Column >
+        {splashPads.map(({ path, title, parkKey }, idx) => (
+          <ClickableTile className="tile" key={`${idx}-${parkKey}`} href={path} >{title}</ClickableTile>
+        ))}
+      </Column>
+    </Row>
+  </Content>)
+}
 
 function App() {
+  const HomePage = window.location.hostname === 'muellersplashpad' ?
+    <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" /> :
+    < AllSplashPads />
 
   return (
     <>
@@ -82,7 +96,7 @@ function App() {
           ))
           }
           <Route path="/">
-            <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" />
+            {HomePage}
           </Route>
         </Switch>
       </Router>
