@@ -161,6 +161,7 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  await knex.migrate.latest({directory: path.join(__dirname, '..', 'knex', 'migrations')})
   console.log(`Example app listening at http://localhost:${PORT}`)
 })
