@@ -23,9 +23,18 @@ const splashPads = [
 ]
 
 function AppHeader() {
-
+  
   const location = useLocation();
-  const currentSplashPad = splashPads.find(pad => pad.path === location.pathname) || splashPads.find(pad => pad.path === '/mueller-branch-park')
+  const getHeaderTitle = () => {
+    if (window.location.hostname === 'muellersplashpad' && location.pathname === '/')
+      return `Austin Splash Pads - Mary Elizabeth Branch Park`
+    else if (window.location.hostname !== 'muellersplashpad' && location.pathname === '/')
+      return "Austin Splash Pads"
+    else
+      return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
+
+  }
+
 
   return (<HeaderContainer
     render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -37,7 +46,7 @@ function AppHeader() {
           isActive={isSideNavExpanded}
         />
         <HeaderName prefix="" >
-          Austin Splash Pads - {currentSplashPad.title}
+          {getHeaderTitle()}
       </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
           <SideNavItems>
