@@ -26,9 +26,9 @@ function AppHeader() {
   
   const location = useLocation();
   const getHeaderTitle = () => {
-    if (window.location.hostname === 'muellersplashpad' && location.pathname === '/')
+    if (window.location.hostname.includes('muellersplashpad') && location.pathname === '/')
       return `Austin Splash Pads - Mary Elizabeth Branch Park`
-    else if (window.location.hostname !== 'muellersplashpad' && location.pathname === '/')
+    else if (!window.location.hostname.includes('muellersplashpad') && location.pathname === '/')
       return "Austin Splash Pads"
     else
       return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
@@ -80,7 +80,7 @@ function AllSplashPads() {
 }
 
 function App() {
-  const HomePage = window.location.hostname === 'muellersplashpad' ?
+  const HomePage = window.location.hostname.includes('muellersplashpad') ?
     <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" /> :
     < AllSplashPads />
 
