@@ -55,6 +55,9 @@ function AppHeader() {
                 {title}
               </SideNavLink>
             ))}
+              <SideNavLink href="/about">
+                About
+              </SideNavLink>
           </SideNavItems>
         </SideNav>
       </Header>
