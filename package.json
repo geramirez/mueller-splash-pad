@@ -4,7 +4,8 @@
   "description": "Is the splash pad open? I built this crowdsourcing site to answer that question.  [https://www.muellersplashpad.com/](www.muellersplashpad.com)",
   "scripts": {
     "start": "cd server && npm run start",
-    "heroku-postbuild": "cd knex && npm install && cd ../client && npm install && npm run build && cd ../server && npm install"
+    "heroku-postbuild": "cd knex && npm install && cd ../client && npm install && npm run build && cd ../server && npm install",
+    "lint-server": "cd server && npm run lint"
   },
   "repository": {
     "type": "git",
