@@ -76,7 +76,7 @@ class DBStatusRepository {
       .from("votes")
       .groupBy("status");
 
-    if (!lastVoteRecords) {
+    if (lastVoteRecords.length === 0) {
       const lastVoteRecord = await knex
         .select("status")
         .where({ park_id })
