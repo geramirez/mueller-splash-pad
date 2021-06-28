@@ -27,11 +27,13 @@ function AppHeader() {
   const location = useLocation();
   const getHeaderTitle = () => {
     if (window.location.hostname.includes('muellersplashpad') && location.pathname === '/')
-      return `Austin Splash Pads - Mary Elizabeth Branch Park`
+      return 'Austin Splash Pads - Mary Elizabeth Branch Park'
     else if (!window.location.hostname.includes('muellersplashpad') && location.pathname === '/')
       return "Austin Splash Pads"
-    else
+    else if (splashPads.some(pad => pad.path === location.pathname))
       return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
+    else 
+      return 'Austin Splash Pads'
 
   }
 
