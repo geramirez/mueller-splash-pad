@@ -13,10 +13,12 @@ export default function About() {
                 <p>
                     Crowdsouring and public project to help the comunity understand when the Austin area splash pads are open.
                 </p>
-                </Row>
-                <br/>
+            </Row>
+            <br />
             <Row>
                 <h2>Don't see your splash pad?</h2>
+            </Row>
+            <Row>
                 <p> Put in a request at: <a href="https://github.com/geramirez/mueller-splash-pad">Github</a> or Reach out on the Austin Splash Pads facebook group </p>
             </Row>
         </Content>
