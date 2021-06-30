@@ -6,10 +6,9 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useLocation
+  useLocation,
 } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
-
 
 const splashPads = [
   { path: '/bartholomew', title: 'Bartholomew Park Splashpad', parkKey: 'bartholomew' },
@@ -35,9 +34,7 @@ function AppHeader() {
       return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
     else
       return 'Austin Splash Pads'
-
   }
-
 
   return (<HeaderContainer
     render={({ isSideNavExpanded, onClickSideNavExpand }) => (
@@ -102,8 +99,22 @@ const handleError = (error) => {
 }
 
 function App() {
+
+  const [location, setLocation] = useState({})
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude, longitude } }) => {
+        setLocation({ latitude, longitude })
+      },
+      error => {
+        console.log(error)
+      },
+      { enableHighAccuracy: true })
+  }, [])
+
   const HomePage = window.location.hostname.includes('muellersplashpad') ?
-    <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" /> :
+    <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" location={location} /> :
     < AllSplashPads />
 
   return (
@@ -116,7 +127,7 @@ function App() {
           </Route>
           {splashPads.map(({ path, title, parkKey }, idx) => (
             <Route path={path} key={`${idx}-${parkKey}`}>
-              <SplashPad title={title} parkKey={parkKey} key={`${idx}-${parkKey}`} />
+              <SplashPad title={title} parkKey={parkKey} key={`${idx}-${parkKey}`} location={location} />
             </Route>
           ))
           }

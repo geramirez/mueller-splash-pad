@@ -3,12 +3,11 @@ import { Row, Column, Button, Content, Loading, Link } from 'carbon-components-r
 import React, { useState, useEffect, useCallback } from 'react';
 
 
-export default function SplashPad({ title, parkKey }) {
+export default function SplashPad({ title, parkKey, location }) {
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasVoted, setHasVoted] = useState(false);
     const [statusData, setStatusData] = useState({});
-    const [location, setLocation] = useState({})
 
     const theme = statusData.status === 'working' ? 'working-theme'
         : statusData.status === 'not_working' ? "not-working-theme"
@@ -29,22 +28,9 @@ export default function SplashPad({ title, parkKey }) {
     }
 
     useEffect(() => {
-        const loadStatusData = () => {
-            fetch(`/status/${parkKey}`)
-                .then(res => res.json())
-                .then(handleResults, handleError)
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            ({ coords: { latitude, longitude } }) => {
-                setLocation({ latitude, longitude })
-                loadStatusData()
-            },
-            error => {
-                console.log(error)
-                loadStatusData()
-            },
-            { enableHighAccuracy: true })
+        fetch(`/status/${parkKey}`)
+            .then(res => res.json())
+            .then(handleResults, handleError)
     }, [parkKey])
 
     const vote = useCallback(async ({ on }) => {
