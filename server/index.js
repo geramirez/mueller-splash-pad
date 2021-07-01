@@ -104,7 +104,7 @@ class DBStatusRepository {
     } else if (workingVotes > notWorkingVotes) {
       return { status: "working", workingVotes, notWorkingVotes };
     } else {
-      return { status: "not working", workingVotes, notWorkingVotes };
+      return { status: "not_working", workingVotes, notWorkingVotes };
     }
   }
 }
@@ -134,6 +134,28 @@ app.get("/status/:parkKey", async (req, res) => {
     votes: { working: workingVotes, not_working: notWorkingVotes },
     updated_at: await statusRepository.getLastVoteTime(parkKey),
   });
+});
+
+app.get("/status", async (req, res) => {
+  const allParks = await knex.select("name").from("parks");
+  const parkStatuses = await Promise.all(
+    allParks.map(async ({ name }) => {
+      const { status, workingVotes, notWorkingVotes } =
+        await statusRepository.getStatus(name);
+      return {
+        name,
+        status,
+        votes: { working: workingVotes, not_working: notWorkingVotes },
+      };
+    })
+  );
+
+  return res.json(
+    parkStatuses.reduce(
+      (acc, { name, status, votes }) => ({ ...acc, [name]: { status, votes } }),
+      {}
+    )
+  );
 });
 
 app.post("/status/:parkKey", async (req, res) => {

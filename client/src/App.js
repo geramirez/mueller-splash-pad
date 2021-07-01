@@ -8,6 +8,7 @@ import {
   Route,
   useLocation
 } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
 
 
 const splashPads = [
@@ -23,7 +24,7 @@ const splashPads = [
 ]
 
 function AppHeader() {
-  
+
   const location = useLocation();
   const getHeaderTitle = () => {
     if (window.location.hostname.includes('muellersplashpad') && location.pathname === '/')
@@ -32,7 +33,7 @@ function AppHeader() {
       return "Austin Splash Pads"
     else if (splashPads.some(pad => pad.path === location.pathname))
       return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
-    else 
+    else
       return 'Austin Splash Pads'
 
   }
@@ -47,7 +48,7 @@ function AppHeader() {
           onClick={onClickSideNavExpand}
           isActive={isSideNavExpanded}
         />
-        <HeaderName  href="/" prefix="" >
+        <HeaderName href="/" prefix="" >
           {getHeaderTitle()}
         </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
@@ -57,9 +58,9 @@ function AppHeader() {
                 {title}
               </SideNavLink>
             ))}
-              <SideNavLink href="/about">
-                About
-              </SideNavLink>
+            <SideNavLink href="/about">
+              About
+            </SideNavLink>
           </SideNavItems>
         </SideNav>
       </Header>
@@ -69,13 +70,32 @@ function AppHeader() {
 }
 
 function AllSplashPads() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [statusData, setStatusData] = useState({});
+
+  const handleResults = (result) => {
+    setStatusData(result)
+    setIsLoaded(true)
+}
+const handleError = (error) => {
+    setIsLoaded(true)
+    console.log(error)
+}
+
+  useEffect(() => {
+    fetch(`/status`)
+      .then(res => res.json())
+      .then(handleResults, handleError)
+  })
+
+  const renderedSplashPads = isLoaded ? splashPads.map(({ path, title, parkKey }, idx) => (
+    <ClickableTile className={`tile ${statusData[parkKey].status}`} key={`${idx}-${parkKey}`} href={path} >{title} - {statusData[parkKey].status.replace('_', ' ')}</ClickableTile>
+  )) : <div/>
 
   return (<Content>
     <Row>
       <Column >
-        {splashPads.map(({ path, title, parkKey }, idx) => (
-          <ClickableTile className="tile" key={`${idx}-${parkKey}`} href={path} >{title}</ClickableTile>
-        ))}
+        {renderedSplashPads}
       </Column>
     </Row>
   </Content>)
