@@ -12,3 +12,11 @@ html {
     margin: 0.5em 0.5em;
     text-align: center;
 }
+
+.tile.working {
+    background-color: #bffffb;
+}
+
+.tile.not_working {
+    background-color: #FBA39D;
+}

@@ -11,14 +11,14 @@ export default function SplashPad({ title, parkKey }) {
     const [location, setLocation] = useState({})
 
     const theme = statusData.status === 'working' ? 'working-theme'
-        : statusData.status === 'not working' ? "not-working-theme"
+        : statusData.status === 'not_working' ? "not-working-theme"
             : "unknow-theme"
 
     const handleResults = (result) => {
         setStatusData({
             ...result,
             statusText: result.status === 'working' ? <><p>{"Hurray!"}</p><p>{"It's working"}</p></>
-                : result.status === 'not working' ? <><p>{"Awww :'("}</p><p>{"not working"}</p></>
+                : result.status === 'not_working' ? <><p>{"Awww :'("}</p><p>{"not working"}</p></>
                     : <><p>{"Not sure..."}</p><p>{"Let us know"}</p></>
         })
         setIsLoaded(true)
