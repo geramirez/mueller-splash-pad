@@ -83,7 +83,7 @@ const handleError = (error) => {
     fetch(`/status`)
       .then(res => res.json())
       .then(handleResults, handleError)
-  })
+  }, [])
 
   const renderedSplashPads = isLoaded ? splashPads.map(({ path, title, parkKey }, idx) => (
     <ClickableTile className={`tile ${statusData[parkKey].status}`} key={`${idx}-${parkKey}`} href={path} >{title} - {statusData[parkKey].status.replace('_', ' ')}</ClickableTile>
