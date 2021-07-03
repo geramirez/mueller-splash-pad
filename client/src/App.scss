@@ -1,3 +1,5 @@
+@import 'themes';
+
 html {
     height: 100%;
     body {
@@ -14,9 +16,9 @@ html {
 }
 
 .tile.working {
-    background-color: #bffffb;
+    background-color: $working-primary;
 }
 
 .tile.not_working {
-    background-color: #FBA39D;
+    background-color: $not-working-primary;
 }

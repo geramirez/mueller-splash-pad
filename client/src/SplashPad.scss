@@ -1,3 +1,5 @@
+@import 'themes';
+
 main {
     height: 100%;
 }
@@ -42,24 +44,24 @@ main {
 }
 
 main.working-theme {
-    background: #bffffb;
-    color: #006f68;
+    background: $working-primary;
+    color: $working-secondary;
     button {
-        background-color: #bffffb;
-        color: #006f68;
+        background-color: $working-primary;
+        color: $working-secondary;
         border-style: solid;
-        border-color:  #006f68;
+        border-color:  $working-secondary;
         box-shadow: 1px 1px 1px 1px #1e1e1e
     }
 }
 main.not-working-theme {
-    background: #FBA39D;
-    color: #4A2040;
+    background: $not-working-primary;
+    color: $not-working-secondary;
     button {
-        background-color: #FBA39D;
-        color: #4A2040;
+        background-color: $not-working-primary;
+        color: $not-working-secondary;
         border-style: solid;
-        border-color:  #4A2040;
+        border-color:  $not-working-secondary;
         box-shadow: 1px 1px 1px 1px #1e1e1e
     }
 }
