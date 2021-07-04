@@ -6,7 +6,7 @@
   "scripts": {
     "startDev": "NODE_ENV=development nodemon",
     "start": "NODE_ENV=production node index.js",
-    "start_inspect": "node --inspect index.js",
+    "start_inspect": "node --inspect=0.0.0.0 index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "fix-lint": "eslint --fix ."

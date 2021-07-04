@@ -20,25 +20,11 @@ Visit https://nodejs.org/en/download/ or use https://github.com/nvm-sh/nvm
 Install Docker: https://docs.docker.com/install/
 Install Docker-Compose: https://docs.docker.com/compose/install/
 
-### Start Client
-    ```bash
-    cd client
-    cp .env.example .env
-    npm i
-    npm run start
-    ```
-
-### Start Server
-    ```bash
-    cd server
-    npm i
-    npm run startDev
-    ```
-
-### Start Database
+### Start Project
     ```bash
     docker-compose up -d
     ```
+
 ### Debugging 
     1. Open `chrome://inspect` in Chrome
     1. Click `Configure`
