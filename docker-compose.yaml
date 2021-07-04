@@ -9,5 +9,39 @@ services:
       - db_data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgrespassword
+  server:
+    image: mueller-splash-pad:server
+    build:
+      context: .
+    depends_on:
+      - postgres
+    volumes:
+      - /usr/src/app/server/node_modules
+      - /usr/src/app/knex/node_modules
+      - ./server:/usr/src/app/server
+      - ./knex:/usr/src/app/knex
+    working_dir: /usr/src/app/server
+    command: npm run startDev
+    environment:
+      NODE_ENV: development
+    ports:
+    - 5000:5000
+    - 9229:9229
+  client:
+    image: mueller-splash-pad:client
+    build:
+      context: .
+    depends_on:
+      - server
+    volumes:
+      - /usr/src/app/client/node_modules
+      - ./client:/usr/src/app/client
+    working_dir: /usr/src/app/client
+    command: npm run start
+    environment:
+      NODE_ENV: development
+      SASS_PATH: node_modules
+    ports:
+    - 3000:3000
 volumes:
   db_data:

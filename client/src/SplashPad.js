@@ -11,7 +11,7 @@ export default function SplashPad({ title, parkKey, location }) {
 
     const theme = statusData.status === 'working' ? 'working-theme'
         : statusData.status === 'not_working' ? "not-working-theme"
-            : "unknow-theme"
+            : "unknown-theme"
 
     const handleResults = (result) => {
         setStatusData({
