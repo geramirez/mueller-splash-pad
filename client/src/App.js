@@ -18,6 +18,7 @@ const splashPads = [
   { path: '/lott', title: 'Lott', parkKey: 'lott' },
   { path: '/metz', title: 'Metz', parkKey: 'metz' },
   { path: '/mueller-branch-park', title: 'Mary Elizabeth Branch Park', parkKey: 'mueller-branch-park' },
+  { path: '/pease', title: 'Pease Park', parkKey: 'pease' },
   { path: '/ricky-guerrero', title: 'Ricky Guerrero Park', parkKey: 'ricky-guerrero' },
   { path: '/rosewood', title: 'Rosewood Park', parkKey: 'rosewood' },
 ]
@@ -73,11 +74,11 @@ function AllSplashPads() {
   const handleResults = (result) => {
     setStatusData(result)
     setIsLoaded(true)
-}
-const handleError = (error) => {
+  }
+  const handleError = (error) => {
     setIsLoaded(true)
     console.log(error)
-}
+  }
 
   useEffect(() => {
     fetch(`/status`)
@@ -87,7 +88,7 @@ const handleError = (error) => {
 
   const renderedSplashPads = isLoaded ? splashPads.map(({ path, title, parkKey }, idx) => (
     <ClickableTile className={`tile ${statusData[parkKey].status}`} key={`${idx}-${parkKey}`} href={path} >{title} - {statusData[parkKey].status.replace('_', ' ')}</ClickableTile>
-  )) : <div/>
+  )) : <div />
 
   return (<Content>
     <Row>
