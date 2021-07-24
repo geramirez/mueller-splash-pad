@@ -11,6 +11,8 @@ services:
       POSTGRES_PASSWORD: postgrespassword
   server:
     image: mueller-splash-pad:server
+    stdin_open: true
+    tty: true
     build:
       context: .
     depends_on:
@@ -29,6 +31,8 @@ services:
     - 9229:9229
   client:
     image: mueller-splash-pad:client
+    stdin_open: true
+    tty: true
     build:
       context: .
     depends_on:

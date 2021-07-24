@@ -1,5 +1,5 @@
 import './App.scss';
-import { Header, HeaderName, SideNavLink, SideNav, Content, Row, ClickableTile, Column, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
+import { Header, HeaderName, SideNavLink, SideNav, Content, SideNavItems, HeaderMenuButton, SkipToContent, HeaderContainer } from 'carbon-components-react';
 import SplashPad from './SplashPad'
 import About from './About'
 import {
@@ -9,21 +9,9 @@ import {
   useLocation,
 } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
+import GoogleMapReact from 'google-map-react';
 
-const splashPads = [
-  { path: '/bartholomew', title: 'Bartholomew Park Splashpad', parkKey: 'bartholomew' },
-  { path: '/chestnut', title: 'Chestnut', parkKey: 'chestnut' },
-  { path: '/eastwoods', title: 'Eastwoods', parkKey: 'eastwoods' },
-  { path: '/liz-carpenter', title: 'Liz Carpenter Park', parkKey: 'liz-carpenter' },
-  { path: '/lott', title: 'Lott', parkKey: 'lott' },
-  { path: '/metz', title: 'Metz', parkKey: 'metz' },
-  { path: '/mueller-branch-park', title: 'Mary Elizabeth Branch Park', parkKey: 'mueller-branch-park' },
-  { path: '/pease', title: 'Pease Park', parkKey: 'pease' },
-  { path: '/ricky-guerrero', title: 'Ricky Guerrero Park', parkKey: 'ricky-guerrero' },
-  { path: '/rosewood', title: 'Rosewood Park', parkKey: 'rosewood' },
-]
-
-function AppHeader() {
+function AppHeader({ splashPads }) {
 
   const location = useLocation();
   const getHeaderTitle = () => {
@@ -32,7 +20,7 @@ function AppHeader() {
     else if (!window.location.hostname.includes('muellersplashpad') && location.pathname === '/')
       return "Austin Splash Pads"
     else if (splashPads.some(pad => pad.path === location.pathname))
-      return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).title}`
+      return `Austin Splash Pads - ${splashPads.find(pad => pad.path === location.pathname).name}`
     else
       return 'Austin Splash Pads'
   }
@@ -51,9 +39,9 @@ function AppHeader() {
         </HeaderName>
         <SideNav aria-label="Side navigation" expanded={isSideNavExpanded}>
           <SideNavItems>
-            {splashPads.map(({ path, title, parkKey }, idx) => (
-              <SideNavLink href={path} key={`${idx}-${parkKey}`}>
-                {title}
+            {splashPads.map(({ name, parkKey }, idx) => (
+              <SideNavLink href={`/${parkKey}`} key={`${idx}-${parkKey}`}>
+                {name}
               </SideNavLink>
             ))}
             <SideNavLink href="/about">
@@ -67,12 +55,40 @@ function AppHeader() {
 
 }
 
-function AllSplashPads() {
+function AllSplashPads({ splashPads }) {
+  return (<Content className="map-page">
+    <GoogleMapReact
+      bootstrapURLKeys={{ key: process.env.GOOGLE_MAPS_API_KEY }}
+      yesIWantToUseGoogleMapApiInternals={true}
+      defaultCenter={{
+        lat: 30.266666,
+        lng: -97.733330
+      }}
+      defaultZoom={12}
+    >
+      {splashPads.map(({ name, parkKey, latitude, longitude, status }, idx) => (
+        <a
+          className={`splash-pad-tile ${status}`}
+          lat={latitude}
+          lng={longitude}
+          href={`/${parkKey}`}
+          text={name} key={`${idx}-${parkKey}`}>
+          {name}
+        </a>
+      ))
+      }
+    </GoogleMapReact>
+  </Content>)
+}
+
+function App() {
+
+  const [location, setLocation] = useState({})
   const [isLoaded, setIsLoaded] = useState(false);
-  const [statusData, setStatusData] = useState({});
+  const [splashPads, setSplashPads] = useState([]);
 
   const handleResults = (result) => {
-    setStatusData(result)
+    setSplashPads(result)
     setIsLoaded(true)
   }
   const handleError = (error) => {
@@ -86,23 +102,6 @@ function AllSplashPads() {
       .then(handleResults, handleError)
   }, [])
 
-  const renderedSplashPads = isLoaded ? splashPads.map(({ path, title, parkKey }, idx) => (
-    <ClickableTile className={`tile ${statusData[parkKey].status}`} key={`${idx}-${parkKey}`} href={path} >{title} - {statusData[parkKey].status.replace('_', ' ')}</ClickableTile>
-  )) : <div />
-
-  return (<Content>
-    <Row>
-      <Column >
-        {renderedSplashPads}
-      </Column>
-    </Row>
-  </Content>)
-}
-
-function App() {
-
-  const [location, setLocation] = useState({})
-
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
@@ -114,31 +113,30 @@ function App() {
       { enableHighAccuracy: true })
   }, [])
 
-  const HomePage = window.location.hostname.includes('muellersplashpad') ?
-    <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" location={location} /> :
-    < AllSplashPads />
 
-  return (
+  return isLoaded ? (
     <>
       <Router>
-        <AppHeader />
+        <AppHeader splashPads={splashPads} />
         <Switch>
           <Route path="/about">
             <About />
           </Route>
-          {splashPads.map(({ path, title, parkKey }, idx) => (
-            <Route path={path} key={`${idx}-${parkKey}`}>
-              <SplashPad title={title} parkKey={parkKey} key={`${idx}-${parkKey}`} location={location} />
+          {splashPads.map(({ name, parkKey }, idx) => (
+            <Route path={`/${parkKey}`} key={`${idx}-${parkKey}`}>
+              <SplashPad title={name} parkKey={parkKey} key={`${idx}-${parkKey}`} location={location} />
             </Route>
           ))
           }
           <Route path="/">
-            {HomePage}
+            {window.location.hostname.includes('muellersplashpad') ?
+              <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" location={location} /> :
+              < AllSplashPads splashPads={splashPads} />}
           </Route>
         </Switch>
       </Router>
     </>
-  );
+  ) : null;
 }
 
 export default App;
