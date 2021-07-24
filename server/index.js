@@ -16,11 +16,11 @@ const twentyFourHoursAgo = () => new Date() - 60 * 60 * 1000 * 24;
 
 const getParkLocation = R.memoizeWith(
   R.identity,
-  async (parkName) =>
+  async (parkKey) =>
     await knex
       .select("latitude", "longitude")
       .from("parks")
-      .where({ name: parkName })
+      .where({ parkKey })
       .first()
 );
 
@@ -28,32 +28,26 @@ class DBStatusRepository {
   constructor() {
     this.getParkId = R.memoizeWith(
       R.identity,
-      async (parkName) =>
-        (
-          await knex
-            .select("id")
-            .from("parks")
-            .where({ name: parkName })
-            .first()
-        ).id
+      async (parkKey) =>
+        (await knex.select("id").from("parks").where({ parkKey }).first()).id
     );
   }
 
-  async addOnVote(weight, parkName) {
-    const park_id = await this.getParkId(parkName);
+  async addOnVote(weight, parkKey) {
+    const park_id = await this.getParkId(parkKey);
     for (var i = 0; i < weight; i++)
       await knex("votes").insert({ status: true, park_id });
   }
 
-  async addOffVote(weight, parkName) {
-    const park_id = await this.getParkId(parkName);
+  async addOffVote(weight, parkKey) {
+    const park_id = await this.getParkId(parkKey);
     for (var i = 0; i < weight; i++)
       await knex("votes").insert({ status: false, park_id });
   }
 
-  async getLastVoteTime(parkName) {
+  async getLastVoteTime(parkKey) {
     const park_id = (
-      await knex.select("id").from("parks").where({ name: parkName }).first()
+      await knex.select("id").from("parks").where({ parkKey }).first()
     ).id;
     const lastVoteRecord = await knex
       .select("created_at")
@@ -66,8 +60,8 @@ class DBStatusRepository {
     return lastVoteRecord ? timeAgo.format(lastVoteRecord.created_at) : "N/A";
   }
 
-  async getStatus(parkName) {
-    const park_id = await this.getParkId(parkName);
+  async getStatus(parkKey) {
+    const park_id = await this.getParkId(parkKey);
     const lastVoteRecords = await knex
       .count("status")
       .select("status")
@@ -137,25 +131,23 @@ app.get("/status/:parkKey", async (req, res) => {
 });
 
 app.get("/status", async (req, res) => {
-  const allParks = await knex.select("name").from("parks");
+  const allParks = await knex.select("*").from("parks");
   const parkStatuses = await Promise.all(
-    allParks.map(async ({ name }) => {
+    allParks.map(async ({ name, parkKey, longitude, latitude }) => {
       const { status, workingVotes, notWorkingVotes } =
-        await statusRepository.getStatus(name);
+        await statusRepository.getStatus(parkKey);
       return {
         name,
+        parkKey,
         status,
+        longitude,
+        latitude,
         votes: { working: workingVotes, not_working: notWorkingVotes },
       };
     })
   );
 
-  return res.json(
-    parkStatuses.reduce(
-      (acc, { name, status, votes }) => ({ ...acc, [name]: { status, votes } }),
-      {}
-    )
-  );
+  return res.json(parkStatuses);
 });
 
 app.post("/status/:parkKey", async (req, res) => {

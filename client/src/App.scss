@@ -6,19 +6,50 @@ html {
         height: 100%;
         #root {
             height: 100%;
+            main.map-page {
+                    padding: 0;
+                }
         }
     }
 }
 
-.tile {
-    margin: 0.5em 0.5em;
+.splash-pad-tile {
     text-align: center;
+    background-color: black;
+    color: white;
+    display: inline-block;
+    white-space: nowrap;
+    text-decoration: none;
+    padding: .3em 1em .3em .3em;
+    border-radius: 1em;
 }
 
-.tile.working {
-    background-color: $working-primary;
+.splash-pad-tile:before {
+    content:"\A";
+    width:1em;
+    height: 1em;
+    border-radius:50%;
+    background: grey;
+    display:inline-block;
+    margin:.2em .5em 0 .5em;
 }
 
-.tile.not_working {
-    background-color: $not-working-primary;
+.splash-pad-tile.working:before {
+    content:"\A";
+    width:1em;
+    height: 1em;
+    border-radius:50%;
+    background: green;
+    display:inline-block;
+    margin:.2em .5em 0 .5em;
+}
+
+.splash-pad-tile.not_working:before {
+    content:"\A";
+    width:1em;
+    height: 1em;
+    border-radius:50%;
+    background: #b83b3b;
+    display:inline-block;
+    margin:.2em .5em 0 .5em;
 }
