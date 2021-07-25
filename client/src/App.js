@@ -58,7 +58,7 @@ function AppHeader({ splashPads }) {
 function AllSplashPads({ splashPads }) {
   return (<Content className="map-page">
     <GoogleMapReact
-      bootstrapURLKeys={{ key: process.env.GOOGLE_MAPS_API_KEY }}
+      bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }}
       yesIWantToUseGoogleMapApiInternals={true}
       defaultCenter={{
         lat: 30.266666,
@@ -113,7 +113,6 @@ function App() {
       { enableHighAccuracy: true })
   }, [])
 
-  console.log(window.location.hostname)
   return isLoaded ? (
     <>
       <Router>

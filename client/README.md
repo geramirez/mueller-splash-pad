@@ -2,6 +2,8 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+This project uses [google-map-react](https://github.com/google-map-react/google-map-react). You'll need to use google console to generate a api key and load it using the `REACT_APP_GOOGLE_MAPS_API_KEY` environment variable.
+
 ## Available Scripts
 
 In the project directory, you can run:
