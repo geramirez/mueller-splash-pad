@@ -113,7 +113,7 @@ function App() {
       { enableHighAccuracy: true })
   }, [])
 
-
+  console.log(window.location.hostname)
   return isLoaded ? (
     <>
       <Router>
@@ -129,7 +129,7 @@ function App() {
           ))
           }
           <Route path="/">
-            {window.location.hostname.includes('muellersplashpad') ?
+            {window.location.hostname === 'www.muellersplashpad.com' ?
               <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" location={location} /> :
               < AllSplashPads splashPads={splashPads} />}
           </Route>
