@@ -1,0 +1,29 @@
+version: '3.7'
+
+x-environment:
+    &default-environment
+    POSTGRES_PASSWORD: postgrespassword
+    NODE_ENV: development
+    SASS_PATH: node_modules
+services:
+    app:
+        build:
+            context: ..
+            dockerfile: .devcontainer/Dockerfile
+        environment:
+            <<: *default-environment
+        volumes:
+            - ..:/workspace
+        user: vscode
+        command: sleep infinity
+    postgres:
+        image: postgres:13
+        restart: unless-stopped
+        environment: *default-environment
+        ports:
+            - 5432:5432
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+volumes:
+    pgdata:
+                

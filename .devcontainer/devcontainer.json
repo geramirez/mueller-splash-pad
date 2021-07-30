@@ -1,0 +1,14 @@
+{
+    "name": "Austin Splash Pads",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "postAttachCommand": "npm run startDev",
+    "settings": {
+        "files.watcherExclude": {
+            "**/.git": true,
+            "**/node_modules": true
+        }
+    },
+    "extensions": [],
+}
