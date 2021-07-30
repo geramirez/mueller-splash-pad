@@ -55,14 +55,14 @@ function AppHeader({ splashPads }) {
 
 }
 
-function AllSplashPads({ splashPads }) {
+function AllSplashPads({ splashPads, location }) {
   return (<Content className="map-page">
     <GoogleMapReact
       bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY }}
       yesIWantToUseGoogleMapApiInternals={true}
       defaultCenter={{
-        lat: 30.266666,
-        lng: -97.733330
+        lat: location.latitude,
+        lng: location.longitude
       }}
       defaultZoom={12}
     >
@@ -83,7 +83,7 @@ function AllSplashPads({ splashPads }) {
 
 function App() {
 
-  const [location, setLocation] = useState({})
+  const [location, setLocation] = useState()
   const [isLoaded, setIsLoaded] = useState(false);
   const [splashPads, setSplashPads] = useState([]);
 
@@ -108,12 +108,12 @@ function App() {
         setLocation({ latitude, longitude })
       },
       error => {
-        console.log(error)
+        setLocation({latitude: 30.266666, longitude: -97.733330})
       },
       { enableHighAccuracy: true })
   }, [])
 
-  return isLoaded ? (
+  return isLoaded && location ? (
     <>
       <Router>
         <AppHeader splashPads={splashPads} />
@@ -130,7 +130,7 @@ function App() {
           <Route path="/">
             {window.location.hostname === 'www.muellersplashpad.com' ?
               <SplashPad title="Mary Elizabeth Branch Park" parkKey="mueller-branch-park" location={location} /> :
-              < AllSplashPads splashPads={splashPads} />}
+              < AllSplashPads splashPads={splashPads} location={location} />}
           </Route>
         </Switch>
       </Router>
