@@ -11,6 +11,7 @@
     "carbon-components-react": "^7.25.0",
     "carbon-icons": "^7.0.7",
     "google-map-react": "^2.1.10",
+    "http-proxy-middleware": "^0.19.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.2.0",
@@ -45,6 +46,5 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3"
-  },
-  "proxy": "http://server:5000"
+  }
 }

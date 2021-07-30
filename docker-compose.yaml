@@ -45,6 +45,7 @@ services:
     environment:
       NODE_ENV: development
       SASS_PATH: node_modules
+      REACT_APP_PROXY: http://server:5000
     ports:
     - 3000:3000
 volumes:
