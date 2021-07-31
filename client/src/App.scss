@@ -7,12 +7,15 @@ html {
         #root {
             height: 100%;
             main.map-page {
-                height: 100%;
-                    padding: 0;
-                }
+                position: absolute;
+                height: 92%;
+                width: 100%;
+                padding: 1%;
+            }
         }
     }
 }
+
 
 nav > ul.bx--side-nav__items {
     padding-bottom: 10em;
