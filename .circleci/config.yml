@@ -1,15 +1,21 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@4.7.0
+  node: circleci/node@4.1
   heroku: circleci/heroku@1.2
+
+
+jobs:
+  lint-server:
+    docker:
+      - image: cimg/node:lts
+    steps:
+      - run: cd server && npm ci && npm run lint
 
 workflows:
   test:
     jobs:
-      - node/run:
-          app-dir: server 
-          npm-run: lint
+      - lint-server
   deploy:
     jobs:
       - heroku/deploy-via-git:
