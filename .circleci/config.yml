@@ -11,7 +11,7 @@ jobs:
       - image: cimg/node:lts
     steps:
       - checkout
-      - run: cd server && npm ci && npm run lint
+      - run: ls && cd server && npm ci && npm run lint
 
 workflows:
   test:
