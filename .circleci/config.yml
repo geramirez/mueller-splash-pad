@@ -10,6 +10,7 @@ jobs:
     docker:
       - image: cimg/node:lts
     steps:
+      - checkout
       - run: cd server && npm ci && npm run lint
 
 workflows:
