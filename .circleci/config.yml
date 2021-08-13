@@ -1,0 +1,34 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@4.1
+  heroku: circleci/heroku@1.2
+
+jobs:
+  lint-server:
+    docker:
+      - image: cimg/node:current
+    steps:
+      - checkout
+      - run: cd server && npm ci && npm run lint
+
+workflows:
+  test:
+    jobs:
+      - lint-server
+  deploy:
+    jobs:
+      - heroku/deploy-via-git:
+          force: true
+          app-name: muellersplashpadstaging
+          filters:
+            branches:
+              only: main
+      - heroku/deploy-via-git:
+          force: true
+          app-name: muellersplashpad
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
