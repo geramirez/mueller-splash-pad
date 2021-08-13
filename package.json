@@ -4,7 +4,7 @@
   "description": "Is the splash pad open? I built this crowdsourcing site to answer that question.  [https://www.muellersplashpad.com/](www.muellersplashpad.com)",
   "scripts": {
     "start": "cd server && npm run start",
-    "heroku-postbuild": "npm run setupDev && cd ../client && npm run build",
+    "heroku-postbuild": "npm run setupDev && cd client && npm run build",
     "setup": "cd knex && npm install && cd ../client && npm install && cd ../server && npm install",
     "startDev": "npm run setup && concurrently \"cd ./client && npm run start\" \"cd ./server && npm run startDev\""
   },
